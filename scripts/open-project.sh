@@ -40,8 +40,8 @@ if [ -d "$THEME_DIR" ]; then
     echo -e "${BLUE}📂 Opening WordPress theme: $PROJECT_NAME${NC}"
     code "$THEME_DIR"
 else
-    # Next.js project - open project root
-    echo -e "${BLUE}📂 Opening Next.js project: $PROJECT_NAME${NC}"
+    # Other type of project - open project root
+    echo -e "${BLUE}📂 Opening project: $PROJECT_NAME${NC}"
     code "$APP_DIR"
 fi
 

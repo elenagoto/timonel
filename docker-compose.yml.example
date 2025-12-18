@@ -2,16 +2,12 @@
 # Copy this to docker-compose.yml to start fresh
 # The actual docker-compose.yml is modified by scripts and git-ignored
 
-networks:
-  dockerator:
-    driver: bridge
-
 services:
   # =================================================================
   # TRAEFIK - Dynamic Reverse Proxy
   # =================================================================
   traefik:
-    image: traefik:v3.0
+    image: traefik:v3.6
     container_name: dockerator_traefik
     command:
       - "--providers.docker=true"
@@ -120,3 +116,8 @@ services:
 
 volumes:
   mysql_data:
+
+networks:
+  dockerator:
+    name: dockerator
+    driver: bridge
