@@ -26,6 +26,7 @@ Inspired by [devner](https://github.com/MarJC5/devner).
 - **Docker Desktop** installed and running ([Download](https://www.docker.com/products/docker-desktop))
 - **macOS** or **Linux**
 - Basic terminal knowledge
+- **Node.js & npm** installed (for Vite project scaffolding) ([Download](https://nodejs.org/))
 
 ```bash
 # Verify Docker is running
@@ -85,7 +86,7 @@ dockerator start my-site
 ### Vite/React Project
 
 ```bash
-dockerator new wp my-vite
+dockerator new vite my-vite
 dockerator hosts
 dockerator start my-vite
 # Visit: http://my-vite.localhost

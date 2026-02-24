@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Create a new Vite + React + TypeScript project
+# Create a new Vite + React + TypeScript project using Vite's official scaffolder
 # Usage: ./new-vite-react.sh <project-name>
+# Requires: Node.js and npm available on the host machine
 
 set -e
 
@@ -19,6 +20,11 @@ if [ -z "$APP_NAME" ]; then
     exit 1
 fi
 
+if ! command -v npm &> /dev/null; then
+    echo "❌ Error: npm is required but not found. Please install Node.js first."
+    exit 1
+fi
+
 echo -e "${BLUE}Creating Vite + React + TypeScript project: $APP_NAME${NC}"
 echo ""
 
@@ -33,47 +39,34 @@ else
     IN_COMPOSE=false
 fi
 
+
+
 # ============================================
-# STEP 1: Create folder
+# STEP 1: Scaffold project with Vite
 # ============================================
 if [ -d "$APP_DIR" ]; then
-    echo -e "${YELLOW}⚠️  Folder $APP_DIR already exists${NC}"
+    echo -e "${YELLOW}⚠️  Folder $APP_DIR already exists, skipping scaffold${NC}"
 else
-    mkdir -p "$APP_DIR"
-    echo -e "${GREEN}✅ Created $APP_DIR${NC}"
+    mkdir -p apps
+    (cd apps && npm create --yes vite@latest "$APP_NAME" -- --template react-ts --no-interactive)
+    echo -e "${GREEN}✅ Scaffolded Vite + React + TypeScript project${NC}"
 fi
 
 # ============================================
-# STEP 2: Create package.json
+# STEP 2: Patch vite.config.ts for Docker
 # ============================================
-if [ -f "$APP_DIR/package.json" ]; then
-    echo -e "${YELLOW}⚠️  package.json already exists${NC}"
+if [ -f "$APP_DIR/vite.config.ts" ]; then
+    sed -i '' 's/plugins: \[react()\],/plugins: [react()],\
+  server: {\
+    host: true,\
+    port: 5173,\
+    watch: {\
+      usePolling: true,\
+    },\
+  },/' "$APP_DIR/vite.config.ts"
+    echo -e "${GREEN}✅ Patched vite.config.ts for Docker${NC}"
 else
-    cat > "$APP_DIR/package.json" << EOF
-{
-  "name": "$APP_NAME",
-  "private": true,
-  "version": "0.1.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
-  "devDependencies": {
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
-    "typescript": "^5.6.3",
-    "vite": "^5.4.11"
-  }
-}
-EOF
-    echo -e "${GREEN}✅ Created package.json${NC}"
+    echo -e "${YELLOW}⚠️  vite.config.ts not found, skipping patch${NC}"
 fi
 
 # ============================================
@@ -97,226 +90,14 @@ else
 fi
 
 # ============================================
-# STEP 5: Create vite.config.ts
-# ============================================
-if [ -f "$APP_DIR/vite.config.ts" ]; then
-    echo -e "${YELLOW}⚠️  vite.config.ts already exists${NC}"
-else
-    cat > "$APP_DIR/vite.config.ts" << EOF
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    host: true, // Needed for Docker
-    port: 5173,
-    watch: {
-      usePolling: true // Needed for hot reload in Docker
-    }
-  }
-})
-EOF
-    echo -e "${GREEN}✅ Created vite.config.ts${NC}"
-fi
-
-# ============================================
-# STEP 6: Create tsconfig.json
-# ============================================
-if [ -f "$APP_DIR/tsconfig.json" ]; then
-    echo -e "${YELLOW}⚠️  tsconfig.json already exists${NC}"
-else
-    cat > "$APP_DIR/tsconfig.json" << EOF
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-    "jsx": "react-jsx",
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
-  },
-  "include": ["src"]
-}
-EOF
-    echo -e "${GREEN}✅ Created tsconfig.json${NC}"
-fi
-
-# ============================================
-# STEP 7: Create index.html
-# ============================================
-if [ -f "$APP_DIR/index.html" ]; then
-    echo -e "${YELLOW}⚠️  index.html already exists${NC}"
-else
-    cat > "$APP_DIR/index.html" << EOF
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>$APP_NAME</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-EOF
-    echo -e "${GREEN}✅ Created index.html${NC}"
-fi
-
-# ============================================
-# STEP 8: Create React app structure
-# ============================================
-if [ -d "$APP_DIR/src" ]; then
-    echo -e "${YELLOW}⚠️  src/ directory already exists${NC}"
-else
-    mkdir -p "$APP_DIR/src"
-    
-    # Create main.tsx
-    cat > "$APP_DIR/src/main.tsx" << EOF
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './index.css'
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
-EOF
-    
-    # Create App.tsx
-    cat > "$APP_DIR/src/App.tsx" << EOF
-import { useState } from 'react'
-import './App.css'
-
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <div className="app">
-      <h1>🎯 $APP_NAME</h1>
-      <p>Running in Dockerator with Vite + React + TypeScript!</p>
-      <p>Access via: <a href="http://$SAFE_NAME.localhost">$SAFE_NAME.localhost</a></p>
-      
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-export default App
-EOF
-    
-    # Create App.css
-    cat > "$APP_DIR/src/App.css" << EOF
-.app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-.card {
-  padding: 2em;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-
-button:hover {
-  border-color: #646cff;
-}
-EOF
-    
-    # Create index.css
-    cat > "$APP_DIR/src/index.css" << EOF
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-#root {
-  width: 100%;
-}
-EOF
-    
-    # Create vite-env.d.ts
-    cat > "$APP_DIR/src/vite-env.d.ts" << EOF
-/// <reference types="vite/client" />
-EOF
-    
-    echo -e "${GREEN}✅ Created React app structure${NC}"
-fi
-
-# ============================================
-# STEP 9: Add to docker-compose.yml
+# STEP 5: Add to docker-compose.yml
 # ============================================
 if [ "$IN_COMPOSE" = false ]; then
     ./scripts/add-to-compose-vite.sh "$APP_NAME"
 fi
 
 # ============================================
-# STEP 10: Check /etc/hosts
+# STEP 6: Check /etc/hosts
 # ============================================
 echo ""
 echo -e "${BLUE}📋 Final steps:${NC}"
@@ -327,6 +108,11 @@ else
     echo -e "${YELLOW}⚠️  Domain not in /etc/hosts yet${NC}"
     echo "   Run: dockerator hosts"
 fi
+
+
+# ============================================
+# END SUMMARY AND NEXT STEPS
+# ============================================
 
 echo ""
 echo -e "${GREEN}🎉 Project '$APP_NAME' ready!${NC}"
