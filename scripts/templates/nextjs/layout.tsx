@@ -1,6 +1,6 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 
-function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='en'>
       <body>
@@ -13,5 +13,3 @@ function RootLayout({ children }) {
     </html>
   );
 }
-
-export default RootLayout;

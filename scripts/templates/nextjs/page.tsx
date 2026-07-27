@@ -1,6 +1,4 @@
-import React from 'react';
-
-function Home() {
+export default function Home() {
   return (
     <main style={{ padding: '2rem', fontFamily: 'system-ui' }}>
       <h1>🎯 $APP_NAME</h1>
@@ -12,5 +10,3 @@ function Home() {
     </main>
   );
 }
-
-export default Home;

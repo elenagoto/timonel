@@ -86,11 +86,12 @@ else
     mkdir -p "$APP_DIR/src/app"
     sed -e 's/$APP_NAME/'"$APP_NAME"'/g' \
         -e 's/$SAFE_NAME/'"$SAFE_NAME"'/g' \
-        scripts/templates/nextjs/page.js > "$APP_DIR/src/app/page.js"
+        scripts/templates/nextjs/page.tsx > "$APP_DIR/src/app/page.tsx"
     sed -e 's/$APP_NAME/'"$APP_NAME"'/g' \
         -e 's/$SAFE_NAME/'"$SAFE_NAME"'/g' \
-        scripts/templates/nextjs/layout.js > "$APP_DIR/src/app/layout.js"
+        scripts/templates/nextjs/layout.tsx > "$APP_DIR/src/app/layout.tsx"
     cp scripts/templates/nextjs/styles.css "$APP_DIR/src/app/styles.css"
+    cp scripts/templates/nextjs/tsconfig.json "$APP_DIR/tsconfig.json"
     mkdir -p "$APP_DIR/src/app/src/components"
     mkdir -p "$APP_DIR/src/app/public"
 

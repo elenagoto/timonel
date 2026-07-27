@@ -11,6 +11,7 @@ Inspired by [devner](https://github.com/MarJC5/devner).
 ## ✨ Features
 
 - 🚀 **One-command project creation** - `dockerator new nextjs|wp|vite <name>`
+- 📘 **TypeScript by default** - New Next.js projects scaffold as TypeScript (strict mode), not JavaScript
 - 🗄️ **Shared services** - MySQL, Adminer, Mailpit across all projects
 - 🔌 **Opt-in DB wiring** - `--with-db` flag connects Next.js projects to MySQL on demand
 - 🔄 **Hot reload** - Changes reflect immediately (Vite + Next.js)
@@ -75,6 +76,8 @@ dockerator start my-app
 # Visit: http://my-app.localhost
 ```
 
+Scaffolds a **TypeScript** Next.js app (strict mode) — `src/app/page.tsx`, `src/app/layout.tsx`, and a `tsconfig.json` at the project root. Run `npm run type-check` inside dev mode any time to check types without a full build.
+
 **With MySQL connected:**
 
 ```bash
@@ -94,6 +97,8 @@ This wires the container to the shared MySQL service with:
 
 Without the flag, the project starts with no database connection — useful for pure frontend practice.
 
+> **Using an existing/downloaded project instead of scaffolding a new one?** See [Bringing In Existing Projects](#-bringing-in-existing-projects) below — the TypeScript default does **not** get forced onto projects that already have their own `src/app` (e.g. course exercises).
+
 #### WordPress Project
 
 ```bash
@@ -111,6 +116,18 @@ dockerator hosts
 dockerator start my-vite
 # Visit: http://my-vite.localhost
 ```
+
+---
+
+### 📥 Bringing In Existing Projects
+
+If you download a project (e.g. a course repo) into `apps/<name>` and then run `dockerator new nextjs <name>` to wire up Docker, Dockerator only fills in what's **missing** — it never overwrites or restructures files that already exist:
+
+- Already has `package.json`? Left untouched, as-is (whatever dependencies/JS-or-TS setup it already has).
+- Already has `src/app`? The entire scaffolding step (including the default `tsconfig.json`) is skipped — the project stays exactly as downloaded, TypeScript or not.
+- Missing `Dockerfile` / `.dockerignore`? Those get added, since Docker plumbing is Dockerator's actual job.
+
+In short: **the TypeScript default only applies to brand-new projects scaffolded from scratch.** A downloaded plain-JS course project run through `dockerator new nextjs` stays plain JS — nothing forces a conversion.
 
 ---
 
@@ -154,8 +171,9 @@ dockerator dev-front my-app
   3. npm run dev            - Restart dev server
 
 🔧 Other commands:
-  npm run build  - Build for production
-  npm run lint   - Lint code
+  npm run build       - Build for production
+  npm run lint         - Lint code
+  npm run type-check   - Check TypeScript types without building (TS projects only)
 
 # When done: exit
 ```
@@ -191,7 +209,10 @@ dockerator/
 │   │   ├── nextjs/
 │   │   │   ├── .dockerignore
 │   │   │   ├── .gitkeep
-│   │   │   └── Dockerfile
+│   │   │   ├── Dockerfile
+│   │   │   ├── tsconfig.json
+│   │   │   ├── page.tsx
+│   │   │   └── layout.tsx
 │   │   ├── vite/
 │   │   │   ├── .dockerignore
 │   │   │   └── Dockerfile
@@ -285,6 +306,13 @@ If a Next.js project was created **before** the `--with-db` flag existed, it won
 
 1. Remove the project and recreate it with `dockerator new nextjs <name> --with-db`
 2. Manually add the `environment` and `depends_on` blocks to that project's service entry in `docker-compose.yml` (see the Next.js block in `docker-compose.yml.example` as a reference for the shape)
+
+### Next.js Project Isn't TypeScript
+
+Two possible reasons, both expected:
+
+1. **Created before TypeScript became the default** — same situation as the DB flag above. Recreate it, or manually add `tsconfig.json` + convert files yourself.
+2. **Scaffolded from an existing/downloaded project** (e.g. a course repo) that already had its own `src/app` — Dockerator intentionally does not force TypeScript onto projects it didn't create from scratch. See [Bringing In Existing Projects](#-bringing-in-existing-projects).
 
 ### Permission Denied Removing Files
 
