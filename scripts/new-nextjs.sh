@@ -6,6 +6,7 @@
 set -e
 
 APP_NAME=$1
+WITH_DB=$2
 APP_DIR="apps/$APP_NAME"
 
 # Colors
@@ -100,7 +101,7 @@ fi
 # STEP 6: Add to docker-compose.yml
 # ============================================
 if [ "$IN_COMPOSE" = false ]; then
-    ./scripts/add-to-compose-nextjs.sh "$APP_NAME"
+    ./scripts/add-to-compose-nextjs.sh "$APP_NAME" "$WITH_DB"
 fi
 
 # ============================================

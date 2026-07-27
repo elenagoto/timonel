@@ -90,10 +90,11 @@ case $COMMAND in
         
         PROJECT_TYPE=$2
         PROJECT_NAME=$3
+
         
         case $PROJECT_TYPE in
             nextjs)
-                ./scripts/new-nextjs.sh "$PROJECT_NAME"
+                ./scripts/new-nextjs.sh "$PROJECT_NAME" "$4"
                 ;;
             wp)
                 ./scripts/new-wordpress.sh "$PROJECT_NAME"

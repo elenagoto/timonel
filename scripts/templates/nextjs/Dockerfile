@@ -4,6 +4,8 @@ FROM node:20-alpine
 # Set working directory inside container
 WORKDIR /app
 
+RUN apk add --no-cache openssl
+
 # Copy package files first (for better caching)
 COPY package*.json ./
 

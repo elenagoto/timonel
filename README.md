@@ -12,6 +12,7 @@ Inspired by [devner](https://github.com/MarJC5/devner).
 
 - 🚀 **One-command project creation** - `dockerator new nextjs|wp|vite <name>`
 - 🗄️ **Shared services** - MySQL, Adminer, Mailpit across all projects
+- 🔌 **Opt-in DB wiring** - `--with-db` flag connects Next.js projects to MySQL on demand
 - 🔄 **Hot reload** - Changes reflect immediately (Vite + Next.js)
 - 🌐 **Clean URLs** - `project-name.localhost` for each project
 - 🔐 **Auto /etc/hosts sync** - No manual editing
@@ -73,6 +74,25 @@ dockerator hosts
 dockerator start my-app
 # Visit: http://my-app.localhost
 ```
+
+**With MySQL connected:**
+
+```bash
+dockerator new nextjs my-app --with-db
+dockerator hosts
+dockerator start my-app
+# Visit: http://my-app.localhost
+```
+
+This wires the container to the shared MySQL service with:
+
+- `DB_HOST=mysql`
+- `DB_NAME=my_app` (underscores)
+- `DB_USER=my_app`
+- `DB_PASSWORD=my_app`
+- Waits for MySQL to be healthy before starting (`depends_on`)
+
+Without the flag, the project starts with no database connection — useful for pure frontend practice.
 
 #### WordPress Project
 
@@ -200,9 +220,20 @@ dockerator/
 
 ---
 
-## 🗄️ WordPress Database Info
+## 🗄️ Database Info
+
+### WordPress Projects
 
 Each WordPress site automatically gets:
+
+- **Database**: `project_name` (underscores)
+- **User**: `project_name`
+- **Password**: `project_name`
+- **Host**: `mysql`
+
+### Next.js Projects
+
+Database wiring is **opt-in** via the `--with-db` flag (see [Usage](#-usage) above) — not automatic like WordPress. Same naming convention applies:
 
 - **Database**: `project_name` (underscores)
 - **User**: `project_name`
@@ -247,6 +278,13 @@ docker-compose ps
 # Check MySQL logs
 dockerator logs mysql
 ```
+
+### Next.js Project Has No DB Env Vars
+
+If a Next.js project was created **before** the `--with-db` flag existed, it won't have `DB_*` environment variables or a MySQL dependency — that's expected, not a bug. Two options:
+
+1. Remove the project and recreate it with `dockerator new nextjs <name> --with-db`
+2. Manually add the `environment` and `depends_on` blocks to that project's service entry in `docker-compose.yml` (see the Next.js block in `docker-compose.yml.example` as a reference for the shape)
 
 ### Permission Denied Removing Files
 
