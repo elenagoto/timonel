@@ -187,6 +187,7 @@ dockerator list            # List all projects with status
 dockerator open <name>     # Open project in VS Code
 dockerator start <name>    # Start project
 dockerator stop <name>     # Stop project
+dockerator restart <name>  # Restart with a full dependency reinstall (node_modules included)
 dockerator logs <name>     # View logs
 dockerator remove <name>   # Remove project completely
 dockerator hosts           # Sync /etc/hosts
@@ -233,6 +234,7 @@ dockerator/
 │   ├── open-project.sh             # Open project in VS Code
 │   ├── remove-from-compose.sh      # Remove project from compose
 │   ├── remove-project.sh           # Delete project completely
+│   ├── restart-project.sh          # Restart a project, reinstalling dependencies
 │   ├── start-project.sh            # Start a project
 │   ├── stop-project.sh             # Stop a project
 │   └── sync-hosts.sh               # Sync /etc/hosts file
@@ -362,7 +364,6 @@ Contributions welcome! Fork, create a feature branch, and open a PR.
 ### Ideas for Contributions
 
 - [ ] Laravel support
-- [ ] `dockerator restart <project>` command
 - [ ] GUI dashboard (web-based)
 - [ ] Backup/restore functionality
 - [ ] Windows support (WSL2)

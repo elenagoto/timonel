@@ -58,6 +58,7 @@ show_menu() {
     echo "  remove <name>      - Remove a project"
     echo "  start <name>       - Start a specific project"
     echo "  stop <name>        - Stop a specific project"
+    echo "  restart <name>        - Restart with a full dependency reinstall"
     echo "  dev-wp <name>      - Enter WordPress dev mode (with Vite)"
     echo "  dev-nextjs <name>  - Enter Next.js dev mode"
     echo "  dev-vite <name>    - Enter Vite React dev mode"
@@ -176,6 +177,15 @@ case $COMMAND in
         
         PROJECT_NAME=$2
         ./scripts/stop-project.sh "$PROJECT_NAME"
+        ;;
+    restart)
+        if [ -z "$2" ]; then
+            echo -e "${RED}Usage: dockerator restart <project-name>${NC}"
+            exit 1
+        fi
+        
+        PROJECT_NAME=$2
+        ./scripts/restart-project.sh "$PROJECT_NAME"
         ;;
     up)
         docker-compose up -d

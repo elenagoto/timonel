@@ -30,6 +30,7 @@ _dockerator() {
         'remove:Remove project'
         'start:Start specific project'
         'stop:Stop specific project'
+        'restart:Restart with full dependency reinstall'
         'dev-wp:WordPress dev mode'
         'dev-nextjs:Next.js dev mode'
         'dev-vite:Vite dev mode'
@@ -47,17 +48,20 @@ _dockerator() {
     )
 
     _arguments -C \
-        '1: :_describe command commands' \
+        '1: :->command' \
         '2: :->argument' \
         && ret=0
 
     case $state in
+        command)
+            _describe 'command' commands && ret=0
+            ;;
         argument)
             case $words[2] in
                 new)
                     _describe 'type' types && ret=0
                     ;;
-                open|logs|remove|start|stop|dev-wp|dev-nextjs|dev-vite|dev-front)
+                open|logs|remove|start|stop|restart|dev-wp|dev-nextjs|dev-vite|dev-front)
                     _describe 'project' projects && ret=0
                     ;;
             esac

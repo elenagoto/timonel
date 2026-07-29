@@ -25,15 +25,15 @@ echo "🔧 Setting up autocomplete..."
 echo "$(pwd)" > ~/.dockerator-path
 
 # Detect shell
-if [ -n "$ZSH_VERSION" ]; then
+if [ -n "$ZSH_VERSION" ] || [ "$(basename "$SHELL")" = "zsh" ]; then
     # Zsh
     mkdir -p ~/.zsh/completion
-    cp dockerator-completion.zsh ~/.zsh/completion/_dockerator
+    ln -sf "$(pwd)/dockerator-completion.zsh" ~/.zsh/completion/_dockerator
     echo "✅ Zsh completion installed (restart terminal to activate)"
 elif [ -n "$BASH_VERSION" ]; then
     # Bash
-    sudo cp dockerator-completion.bash /etc/bash_completion.d/dockerator 2>/dev/null || \
-        cp dockerator-completion.bash ~/.bash_completion.d/dockerator
+    sudo ln -sf "$(pwd)/dockerator-completion.bash" /etc/bash_completion.d/dockerator 2>/dev/null || \
+        ln -sf "$(pwd)/dockerator-completion.bash" ~/.bash_completion.d/dockerator
     echo "✅ Bash completion installed (restart terminal to activate)"
 fi
 
