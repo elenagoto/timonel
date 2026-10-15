@@ -2,6 +2,7 @@
 
 # Create a new Next.js project
 # Usage: ./new-nextjs.sh <project-name>
+# With optional database: ./new-nextjs.sh <project-name> <with-db>
 
 set -e
 
