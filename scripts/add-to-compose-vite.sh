@@ -6,6 +6,8 @@
 APP_NAME=$1
 COMPOSE_FILE="docker-compose.yml"
 
+source scripts/lib/compose.sh
+
 if [ -z "$APP_NAME" ]; then
     echo "❌ Error: App name required"
     exit 1
@@ -45,21 +47,8 @@ cat > "$SERVICE_FILE" << EOF
     
 EOF
 
-# Create new compose file by inserting service before volumes
-OUTPUT_FILE=$(mktemp)
-
-while IFS= read -r line; do
-    if [[ "$line" == "volumes:" ]]; then
-        # Insert service block before volumes
-        cat "$SERVICE_FILE"
-    fi
-    echo "$line"
-done < "$COMPOSE_FILE" > "$OUTPUT_FILE"
-
-# Replace original file
-mv "$OUTPUT_FILE" "$COMPOSE_FILE"
-
-# Clean up
+# Insert the service block before the volumes:/networks: keys
+insert_service_block "$SERVICE_FILE" "$COMPOSE_FILE"
 rm "$SERVICE_FILE"
 
 echo "✅ Added $SAFE_NAME to docker-compose.yml"

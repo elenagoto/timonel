@@ -6,6 +6,7 @@
 set -e
 
 source scripts/lib/project.sh
+source scripts/lib/compose.sh
 
 # Colors
 GREEN='\033[0;32m'
@@ -17,13 +18,12 @@ NC='\033[0m'
 echo -e "${BLUE}📋 Dockerator Projects${NC}"
 echo ""
 
-# Get running containers
-RUNNING=$(docker-compose ps --services --filter "status=running" 2>/dev/null | grep -v "traefik\|mysql\|adminer\|mailpit" || true)
+# Get running services (matched exactly per project below, so core
+# services in this list don't matter)
+RUNNING=$(docker-compose ps --services --filter "status=running" 2>/dev/null || true)
 
-# Get all services from docker-compose.yml (excluding core services and network/volume definitions)
-ALL_SERVICES=$(grep -E "^  [a-z0-9-]+:" docker-compose.yml | \
-               grep -v "traefik:\|mysql:\|adminer:\|mailpit:" | \
-               sed 's/://g' | sed 's/^  //' || true)
+# Project services only: keys under `services:`, minus the core services
+ALL_SERVICES=$(list_project_services)
 
 if [ -z "$ALL_SERVICES" ]; then
     echo -e "${YELLOW}No projects found${NC}"

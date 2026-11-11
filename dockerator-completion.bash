@@ -18,10 +18,11 @@ _dockerator_completions() {
         DOCKERATOR_DIR="$HOME/projects/dockerator"
     fi
     
+    # Shared helper (run in a separate bash so its functions don't leak
+    # into your shell): project services only, no core services or network
     if [ -f "$DOCKERATOR_DIR/docker-compose.yml" ]; then
-        projects=$(grep -E "^  [a-z0-9-]+:" "$DOCKERATOR_DIR/docker-compose.yml" | \
-                   sed 's/://g' | sed 's/^  //' | \
-                   grep -v "traefik\|mysql\|adminer\|mailpit" || true)
+        projects=$(cd "$DOCKERATOR_DIR" && \
+                   bash -c 'source scripts/lib/compose.sh && list_project_services' 2>/dev/null || true)
     fi
     
     case "${prev}" in

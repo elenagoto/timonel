@@ -13,10 +13,11 @@ _dockerator() {
     fi
 
     # Get projects
+    # Shared helper (run in bash, the scripts' shell): project services
+    # only, no core services or network
     if [ -f "$DOCKERATOR_DIR/docker-compose.yml" ]; then
-        projects=(${(f)"$(grep -E "^  [a-z0-9-]+:" "$DOCKERATOR_DIR/docker-compose.yml" | \
-                         sed 's/://g' | sed 's/^  //' | \
-                         grep -v "traefik\|mysql\|adminer\|mailpit")"})
+        projects=(${(f)"$(cd "$DOCKERATOR_DIR" && \
+                         bash -c 'source scripts/lib/compose.sh && list_project_services' 2>/dev/null)"})
     fi
 
     local -a commands
