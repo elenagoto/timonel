@@ -1,5 +1,5 @@
 # WordPress with FrankenPHP
-FROM dunglas/frankenphp:latest-php8.3
+FROM dunglas/frankenphp:1-php8.4
 
 # Install WordPress dependencies
 RUN install-php-extensions \
@@ -15,7 +15,7 @@ RUN install-php-extensions \
 # Install Node.js and npm (Debian-based)
 RUN apt-get update && \
     apt-get install -y curl && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
     apt-get install -y nodejs && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

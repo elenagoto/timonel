@@ -86,12 +86,13 @@ timonel history [--errors]                # command log (phase 4)
   - [ ] Caddyfile web root from the framework settings (`/app` or `/app/public`)
   - [ ] Dev port 5173 mechanism from `dev-mode-wp.sh` generalised to the whole php stack
 - [ ] Scaffolding runs in a temporary container (Vite: drop the "npm required on your Mac" prerequisite)
-- [x] Shared helper that lists project services from the `services:` section only. Use it in `list`, both completions and the name checks. *(Audit: `grep "^  name:"` also matches the `dockerator:` network key, and filtering on "mysql" hides projects with "mysql" in their name.)*
+- [x] Shared helper that lists project services from the `services:` section only. Used by `list` and both completions. *(Audit: `grep "^  name:"` also matches the `dockerator:` network key, and filtering on "mysql" hides projects with "mysql" in their name.)*
+- [ ] Use it for the per-script "is this project in the compose file?" checks too (still `grep "^  name:"`; safe for now thanks to reserved names). Do it as those scripts are rewritten in groups 3–4.
 - [x] Make the compose insert keep the last line of the file *(found while testing: the `while read` loop drops a final line without a trailing newline, e.g. `driver: bridge`)*
-- [ ] **Updates** *(audit)*, done once in the shared templates:
-  - [ ] Node 20 (end-of-life April 2026) → `node:24-alpine` everywhere (also in the PHP image, replacing `setup_20.x`)
-  - [ ] FrankenPHP `php8.3` → `php8.4` (current Laravel supports it)
-  - [ ] Pin `adminer` and `mailpit` image versions instead of `latest`
+- [x] **Updates** *(audit)*:
+  - [x] Node 20 (end-of-life April 2026) → `node:24-alpine` everywhere (also in the PHP image, replacing `setup_20.x`)
+  - [x] FrankenPHP `latest-php8.3` → `1-php8.4` (major version pinned; current Laravel supports PHP 8.4)
+  - [x] Pin `adminer:6` and `axllent/mailpit:v1.32` instead of `latest`
 - [ ] **Templates** *(audit)*:
   - [ ] Next: add ESLint with Next's recommended config and a `lint` script (Next 16 removed `next lint`; dev mode already advertises `npm run lint`)
   - [ ] Parcel: update `parcel` 2.12; drop or replace `eslint@8` + `eslint-config-react-app` (end-of-life/unmaintained) and `react-feather` (→ `lucide-react`); move lint tools to devDependencies; `styles.css` is loaded twice
