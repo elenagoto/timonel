@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Dockerator is a bash CLI tool (not an app you build/test) that orchestrates Docker Compose to manage multiple local dev projects (Next.js, WordPress, Vite+React, Parcel) behind Traefik, with shared MySQL/Adminer/Mailpit services and automatic `*.localhost` domain routing. The repo itself is the tool; `apps/` (git-ignored) holds the projects it scaffolds and manages.
 
+**Ongoing redesign:** the tool is being restructured (node/php stacks, `new` vs `add`, a single `dev`) and renamed to **timonel**. The plan and progress are in [ROADMAP.md](ROADMAP.md). Read it before starting work, and tick items off there.
+
 ## Commands
 
 There is no build/lint/test suite — this is a shell script toolkit. To work on it:
