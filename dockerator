@@ -21,6 +21,9 @@ SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 # Change to that directory so all paths work
 cd "$SCRIPT_DIR"
 
+# Project-name helpers (validation, reserved names)
+source scripts/lib/project.sh
+
 # DEBUG - temporary
 # echo "DEBUG: Script dir: $SCRIPT_DIR"
 # echo "DEBUG: Current dir: $(pwd)"
@@ -80,6 +83,27 @@ if [ $# -eq 0 ]; then
 fi
 
 COMMAND=$1
+
+# Validate the project name before any script uses it in paths
+# (rm -rf apps/<name>), sed replacements or SQL
+case $COMMAND in
+    new) NAME_ARG=${3-} ;;
+    remove|open|start|stop|restart|logs|dev-wp|dev-front|dev-nextjs|dev-vite) NAME_ARG=${2-} ;;
+    *) NAME_ARG="" ;;
+esac
+
+if [ -n "$NAME_ARG" ]; then
+    if ! is_valid_project_name "$NAME_ARG"; then
+        echo -e "${RED}❌ Invalid project name: '$NAME_ARG'${NC}"
+        echo "   Use only letters, digits, '-' and '_', starting with a letter or digit."
+        exit 1
+    fi
+    # Creating or removing a core service name would clobber shared services
+    if { [ "$COMMAND" = "new" ] || [ "$COMMAND" = "remove" ]; } && is_reserved_project_name "$NAME_ARG"; then
+        echo -e "${RED}❌ '$NAME_ARG' is reserved by Dockerator (${DOCKERATOR_RESERVED_NAMES// /, })${NC}"
+        exit 1
+    fi
+fi
 
 case $COMMAND in
     new)

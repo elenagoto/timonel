@@ -38,8 +38,8 @@ cat > "$SERVICE_FILE" << EOF
       - "traefik.enable=true"
       - "traefik.http.routers.$SAFE_URL.rule=Host(\`$SAFE_URL.localhost\`)"
       - "traefik.http.services.$SAFE_URL.loadbalancer.server.port=80"
-    ports:
-      - "5173:5173"  # Vite HMR
+    # No fixed ports: dockerator dev-wp publishes 5173 (Vite HMR) only while
+    # dev mode is open, so several WordPress projects can run side by side
     volumes:
       - ./apps/$APP_NAME:/app
       - ./apps/$APP_NAME/Caddyfile:/etc/caddy/Caddyfile

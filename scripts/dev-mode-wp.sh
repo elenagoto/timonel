@@ -2,12 +2,19 @@
 
 # Enter development mode for a WordPress project
 # Usage: ./dev-mode-wp.sh <project-name>
+#
+# Publishes port 5173 (Vite HMR) for this project only while dev mode is open.
+# The port is added through a temporary compose override file, so
+# docker-compose.yml is never edited. On exit the container is recreated
+# without the port, freeing 5173 for other projects.
 
 set -e
 
+source scripts/lib/project.sh
+
 PROJECT_NAME=$1
-SAFE_URL=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
-THEME_DIR="/app/wp-content/themes/$PROJECT_NAME"
+SAFE_URL=$(to_safe_name "$PROJECT_NAME")
+VITE_PORT=5173
 
 # Colors
 GREEN='\033[0;32m'
@@ -27,81 +34,54 @@ if ! grep -q "^  $SAFE_URL:" docker-compose.yml; then
     exit 1
 fi
 
-# Check if container is running
-if ! docker ps --format '{{.Names}}' | grep -q "^dockerator_$SAFE_URL$"; then
-    echo -e "${YELLOW}⚠️  Container not running. Starting...${NC}"
-    docker-compose up -d "$SAFE_URL"
-    sleep 2
-fi
+# The theme folder is named after the project folder (which may differ from
+# the service name, e.g. folder my_site vs service my-site)
+THEME_DIR="/app/wp-content/themes/$(resolve_app_dir_name "$PROJECT_NAME")"
 
 echo -e "${BLUE}🔧 Setting up development environment for $PROJECT_NAME...${NC}"
 
-# Cleanup function - removes Vite port from all WordPress services
+# Projects created by older Dockerator versions publish 5173 permanently in
+# docker-compose.yml. Don't add it a second time for those.
+ALREADY_PUBLISHED=$(awk -v svc="  $SAFE_URL:" -v port="$VITE_PORT:$VITE_PORT" '
+    { line = $0; sub(/[ \t\r]+$/, "", line) }
+    line == svc { found = 1; next }
+    found && match($0, /[^ \t\r]/) && RSTART <= 3 { exit }
+    found && index($0, port) { print "yes"; exit }
+' docker-compose.yml)
+
+OVERRIDE_DIR=""
+
 cleanup() {
-    echo ""
-    echo -e "${BLUE}🧹 Cleaning up...${NC}"
-    
-    # Remove all Vite port mappings from docker-compose.yml
-    sed -i.bak '/- "5173:5173"/d' docker-compose.yml
-    rm -f docker-compose.yml.bak
-    
+    if [ -n "$OVERRIDE_DIR" ]; then
+        echo ""
+        echo -e "${BLUE}🧹 Cleaning up: recreating container without port $VITE_PORT...${NC}"
+        # Same config minus the override -> Compose recreates the container
+        docker-compose --profile projects up -d "$SAFE_URL" || \
+            echo -e "${YELLOW}⚠️  Could not recreate container; run: dockerator start $SAFE_URL${NC}"
+        rm -rf "$OVERRIDE_DIR"
+    fi
     echo -e "${GREEN}✅ Development mode ended${NC}"
 }
-
-# Set trap to cleanup on exit
 trap cleanup EXIT
 
-# Add Vite port to this project
-echo -e "${BLUE}📝 Adding Vite port (5173) to $PROJECT_NAME...${NC}"
-
-# First, remove any existing Vite ports
-sed -i.bak '/- "5173:5173"/d' docker-compose.yml
-rm -f docker-compose.yml.bak
-
-# Add Vite port to the specified service
-# Insert after the "labels:" section, before "volumes:"
-# Check if ports section already exists for this service
-if grep -A 20 "^  $SAFE_URL:" docker-compose.yml | grep -q "^    ports:"; then
-    # Ports section exists - check if 5173 is already there
-    if grep -A 20 "^  $SAFE_URL:" docker-compose.yml | grep -q "5173:5173"; then
-        echo -e "${GREEN}✅ Port 5173 already configured for $PROJECT_NAME${NC}"
-    else
-        # Add 5173 to existing ports section
-        awk -v service="  $SAFE_URL:" '
-        $0 ~ service {found=1}
-        found && /^    ports:/ {
-            print
-            getline
-            print
-            print "      - \"5173:5173\""
-            found=0
-            next
-        }
-        {print}
-        ' docker-compose.yml > docker-compose.yml.tmp
-        mv docker-compose.yml.tmp docker-compose.yml
-        echo -e "${GREEN}✅ Added port 5173 to existing ports section${NC}"
-    fi
+if [ "$ALREADY_PUBLISHED" = "yes" ]; then
+    echo -e "${GREEN}✅ Port $VITE_PORT already published for $PROJECT_NAME${NC}"
+    docker-compose --profile projects up -d "$SAFE_URL"
 else
-    # No ports section - create one
-    awk -v service="  $SAFE_URL:" -v port='    ports:\n      - "5173:5173"' '
-    $0 ~ service {found=1}
-    found && /^    volumes:/ && !done {
-        print port
-        done=1
-    }
-    {print}
-    ' docker-compose.yml > docker-compose.yml.tmp
-    mv docker-compose.yml.tmp docker-compose.yml
-    echo -e "${GREEN}✅ Added port 5173 to $PROJECT_NAME${NC}"
+    echo -e "${BLUE}📝 Publishing Vite port ($VITE_PORT) for $PROJECT_NAME...${NC}"
+    OVERRIDE_DIR=$(mktemp -d)
+    cat > "$OVERRIDE_DIR/dev-wp.override.yml" << EOF
+services:
+  $SAFE_URL:
+    ports:
+      - "$VITE_PORT:$VITE_PORT"
+EOF
+    # Recreates the container with the extra port (starts it if stopped)
+    docker-compose -f docker-compose.yml -f "$OVERRIDE_DIR/dev-wp.override.yml" \
+        --profile projects up -d "$SAFE_URL"
 fi
 
-# Restart the container to apply port changes
-echo -e "${BLUE}🔄 Restarting container...${NC}"
-docker-compose up -d "$SAFE_URL"
-sleep 2
-
-echo -e "${GREEN}✅ Container restarted${NC}"
+echo -e "${GREEN}✅ Container ready${NC}"
 echo ""
 echo -e "${BLUE}📂 Entering development environment...${NC}"
 echo -e "${YELLOW}Theme directory: $THEME_DIR${NC}"
@@ -115,4 +95,4 @@ echo -e "${YELLOW}Type 'exit' when done to cleanup${NC}"
 echo ""
 
 # Enter the container at the theme directory
-docker-compose exec "$SAFE_URL" sh -c "cd $THEME_DIR && exec sh"
+docker-compose exec "$SAFE_URL" sh -c "cd '$THEME_DIR' && exec sh"

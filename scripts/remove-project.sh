@@ -5,8 +5,9 @@
 
 set -e
 
+source scripts/lib/project.sh
+
 PROJECT_NAME=$1
-APP_DIR="apps/$PROJECT_NAME"
 
 # Colors
 RED='\033[0;31m'
@@ -20,7 +21,23 @@ if [ -z "$PROJECT_NAME" ]; then
     exit 1
 fi
 
-SAFE_NAME=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+# Re-checked here (not only in the dispatcher) because this script runs rm -rf
+if ! is_valid_project_name "$PROJECT_NAME" || is_reserved_project_name "$PROJECT_NAME"; then
+    echo -e "${RED}❌ Error: Invalid or reserved project name '$PROJECT_NAME'${NC}"
+    exit 1
+fi
+
+SAFE_NAME=$(to_safe_name "$PROJECT_NAME")
+
+# Resolve the folder BEFORE the service is removed from docker-compose.yml,
+# since the folder name is read from the service's build context
+# (folder my_app <-> service my-app)
+APP_DIR_NAME=$(resolve_app_dir_name "$PROJECT_NAME")
+if ! is_valid_project_name "$APP_DIR_NAME"; then
+    echo -e "${RED}❌ Error: Unexpected folder '$APP_DIR_NAME' in docker-compose.yml, refusing to delete${NC}"
+    exit 1
+fi
+APP_DIR="apps/$APP_DIR_NAME"
 
 echo -e "${RED}🗑️  Removing project: $PROJECT_NAME${NC}"
 echo ""

@@ -93,8 +93,8 @@ else
         scripts/templates/nextjs/layout.tsx > "$APP_DIR/src/app/layout.tsx"
     cp scripts/templates/nextjs/styles.css "$APP_DIR/src/app/styles.css"
     cp scripts/templates/nextjs/tsconfig.json "$APP_DIR/tsconfig.json"
-    mkdir -p "$APP_DIR/src/app/src/components"
-    mkdir -p "$APP_DIR/src/app/public"
+    mkdir -p "$APP_DIR/src/components"
+    mkdir -p "$APP_DIR/public"   # Next.js only serves public/ from the project root
 
     echo -e "${GREEN}✅ Created Next.js structure${NC}"
 fi
@@ -104,6 +104,14 @@ fi
 # ============================================
 if [ "$IN_COMPOSE" = false ]; then
     ./scripts/add-to-compose-nextjs.sh "$APP_NAME" "$WITH_DB"
+fi
+
+# With --with-db, the container gets DB_* env vars, so the database and user
+# they point to must actually exist (same naming as WordPress: underscores)
+if [ "$WITH_DB" = "--with-db" ]; then
+    SAFE_DB=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
+    echo ""
+    ./scripts/create-db.sh "$SAFE_DB"
 fi
 
 # ============================================

@@ -5,6 +5,8 @@
 
 set -e
 
+source scripts/lib/project.sh
+
 # Colors
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -38,19 +40,22 @@ echo "────────────────────────�
 
 # Display projects
 for project in $ALL_SERVICES; do
+    # The folder can differ from the service name (folder my_app, service my-app)
+    dir="apps/$(resolve_app_dir_name "$project")"
+
     # Skip if not a real project directory
-    if [ ! -d "apps/$project" ]; then
+    if [ ! -d "$dir" ]; then
         continue
     fi
-    
+
     # Determine type
-    if [ -f "apps/$project/wp-config.php" ]; then
+    if [ -f "$dir/wp-config.php" ]; then
         TYPE="${CYAN}WordPress${NC}"
         TYPE_DISPLAY="WordPress"
-    elif [ -f "apps/$project/vite.config.js" ] || [ -f "apps/$project/vite.config.ts" ]; then
+    elif [ -f "$dir/vite.config.js" ] || [ -f "$dir/vite.config.ts" ]; then
         TYPE="${YELLOW}Vite React${NC}"
         TYPE_DISPLAY="Vite React"
-    elif [ -f "apps/$project/package.json" ]; then
+    elif [ -f "$dir/package.json" ]; then
         TYPE="${GREEN}Next.js${NC}"
         TYPE_DISPLAY="Next.js  "
     else

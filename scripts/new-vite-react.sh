@@ -55,18 +55,29 @@ fi
 # ============================================
 # STEP 2: Patch vite.config.ts for Docker
 # ============================================
-if [ -f "$APP_DIR/vite.config.ts" ]; then
-    sed -i '' 's/plugins: \[react()\],/plugins: [react()],\
+VITE_CONFIG="$APP_DIR/vite.config.ts"
+if [ ! -f "$VITE_CONFIG" ]; then
+    echo -e "${YELLOW}⚠️  vite.config.ts not found, skipping patch${NC}"
+elif grep -q 'usePolling' "$VITE_CONFIG"; then
+    # Already patched (re-run) - don't add a second server block
+    echo -e "${YELLOW}⚠️  vite.config.ts already patched for Docker${NC}"
+elif grep -q 'plugins: \[react()\],' "$VITE_CONFIG"; then
+    # Write to a temp file instead of `sed -i`, whose syntax differs
+    # between macOS (BSD) and Linux (GNU)
+    sed 's/plugins: \[react()\],/plugins: [react()],\
   server: {\
     host: true,\
     port: 5173,\
     watch: {\
       usePolling: true,\
     },\
-  },/' "$APP_DIR/vite.config.ts"
+  },/' "$VITE_CONFIG" > "$VITE_CONFIG.tmp"
+    mv "$VITE_CONFIG.tmp" "$VITE_CONFIG"
     echo -e "${GREEN}✅ Patched vite.config.ts for Docker${NC}"
 else
-    echo -e "${YELLOW}⚠️  vite.config.ts not found, skipping patch${NC}"
+    echo -e "${YELLOW}⚠️  Couldn't find 'plugins: [react()],' in vite.config.ts${NC}"
+    echo "   Add this manually inside defineConfig({...}):"
+    echo "   server: { host: true, port: 5173, watch: { usePolling: true } },"
 fi
 
 # ============================================

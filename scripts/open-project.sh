@@ -22,8 +22,12 @@ fi
 # Get the directory where dockerator is installed (resolve symlink)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DOCKERATOR_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
+cd "$DOCKERATOR_DIR"
+source scripts/lib/project.sh
 
-APP_DIR="$DOCKERATOR_DIR/apps/$PROJECT_NAME"
+# Accept the folder name or the service name (my_app / my-app)
+APP_DIR_NAME=$(resolve_app_dir_name "$PROJECT_NAME")
+APP_DIR="$DOCKERATOR_DIR/apps/$APP_DIR_NAME"
 
 # Check if project exists
 if [ ! -d "$APP_DIR" ]; then
@@ -33,7 +37,7 @@ if [ ! -d "$APP_DIR" ]; then
 fi
 
 # Determine if it's WordPress or Next.js
-THEME_DIR="$APP_DIR/wp-content/themes/$PROJECT_NAME"
+THEME_DIR="$APP_DIR/wp-content/themes/$APP_DIR_NAME"
 
 if [ -d "$THEME_DIR" ]; then
     # WordPress project - open theme directory

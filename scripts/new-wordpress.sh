@@ -39,18 +39,21 @@ fi
 # ============================================
 # STEP 2: Download WordPress
 # ============================================
+JUST_DOWNLOADED=false
 if [ -f "$APP_DIR/wp-config.php" ]; then
     echo -e "${YELLOW}⚠️  WordPress already exists${NC}"
 else
     echo -e "${BLUE}📥 Downloading WordPress...${NC}"
     curl -sS https://wordpress.org/latest.tar.gz | tar -xz -C "$APP_DIR" --strip-components=1
+    JUST_DOWNLOADED=true
     echo -e "${GREEN}✅ WordPress downloaded${NC}"
 fi
 THEMES_DIR="$APP_DIR/wp-content/themes"
 THEME_DIR="$THEMES_DIR/$APP_NAME"
 
-# Remove default WordPress themes
-if [ -d "$THEMES_DIR" ]; then
+# Remove default WordPress themes - only right after a fresh download,
+# so re-running this script never deletes the project's own theme
+if [ "$JUST_DOWNLOADED" = true ] && [ -d "$THEMES_DIR" ]; then
     echo -e "${BLUE}🧹 Cleaning default themes...${NC}"
     rm -rf "$THEMES_DIR"/*
     echo -e "${GREEN}✅ Removed default themes${NC}"
@@ -86,6 +89,16 @@ else
     echo -e "${YELLOW}⚠️  Caddyfile already exists${NC}"
 fi
 
+# Route WordPress mail to Mailpit (WordPress ignores SMTP_* constants alone)
+MU_PLUGIN="$APP_DIR/wp-content/mu-plugins/dockerator-mailpit.php"
+if [ ! -f "$MU_PLUGIN" ]; then
+    mkdir -p "$APP_DIR/wp-content/mu-plugins"
+    cp scripts/templates/wordpress/dockerator-mailpit.php "$MU_PLUGIN"
+    echo -e "${GREEN}✅ Created Mailpit mu-plugin${NC}"
+else
+    echo -e "${YELLOW}⚠️  Mailpit mu-plugin already exists${NC}"
+fi
+
 # ============================================
 # STEP 4: Generate wp-config.php
 # ============================================
@@ -111,41 +124,8 @@ fi
 # STEP 5: Create MySQL database and user
 # ============================================
 echo ""
-echo -e "${BLUE}🗄️  Setting up database...${NC}"
-
-# Check if MySQL container is running
-if ! docker ps --format '{{.Names}}' | grep -q "^dockerator_mysql$"; then
-    echo -e "${YELLOW}⚠️  MySQL container not running. Start it with: dockerator up${NC}"
-    echo "   Database will be created when you start the containers."
-else
-    # Check if database already exists
-    DB_EXISTS=$(docker exec dockerator_mysql mysql -uroot -pdockerator \
-        -e "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='$SAFE_NAME';" \
-        -sN 2>/dev/null || echo "")
-    
-    if [ -n "$DB_EXISTS" ]; then
-        echo -e "${YELLOW}⚠️  Database '$SAFE_NAME' already exists${NC}"
-    else
-        echo -e "${BLUE}   Creating database '$SAFE_NAME'...${NC}"
-        
-        # Create database
-        docker exec dockerator_mysql mysql -uroot -pdockerator \
-            -e "CREATE DATABASE IF NOT EXISTS $SAFE_NAME CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-        
-        # Create user and grant privileges
-        docker exec dockerator_mysql mysql -uroot -pdockerator \
-            -e "CREATE USER IF NOT EXISTS '$SAFE_NAME'@'%' IDENTIFIED BY '$SAFE_NAME';"
-        
-        docker exec dockerator_mysql mysql -uroot -pdockerator \
-            -e "GRANT ALL PRIVILEGES ON $SAFE_NAME.* TO '$SAFE_NAME'@'%';"
-        
-        docker exec dockerator_mysql mysql -uroot -pdockerator \
-            -e "FLUSH PRIVILEGES;"
-        
-        echo -e "${GREEN}✅ Database created: $SAFE_NAME${NC}"
-        echo -e "${GREEN}✅ User created: $SAFE_NAME / $SAFE_NAME${NC}"
-    fi
-fi
+# Starts MySQL if needed, waits until healthy, then creates db + user (idempotent)
+./scripts/create-db.sh "$SAFE_NAME"
 # ============================================
 # STEP 6: Add to docker-compose.yml
 # ============================================
@@ -180,7 +160,7 @@ echo "  Password: $SAFE_NAME"
 echo ""
 echo "Next steps:"
 echo "  1. Sync hosts: dockerator hosts"
-echo "  2. Start containers: dockerator up"
+echo "  2. Start container: dockerator start $SAFE_URL"
 echo "  3. Visit: http://$SAFE_URL.localhost"
 echo "  4. Complete WordPress installation"
 echo ""
