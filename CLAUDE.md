@@ -57,6 +57,15 @@ Manually testing a change to a `scripts/*.sh` file means running the correspondi
 
 **Routing**: every project service gets Traefik labels (`traefik.http.routers.<name>.rule=Host(\`<name>.localhost\`)`); `scripts/sync-hosts.sh` greps all such labels out of `docker-compose.yml` and writes a single marked block into `/etc/hosts` (requires sudo, re-execs itself with `sudo` if needed). It is **optional**: Chrome/Firefox/Edge resolve `*.localhost` themselves, so `new`/`add` no longer remind you to run it (only a one-line hint for Safari / CLI tools).
 
+## Documentation
+
+User and contributor docs live in `docs/` (one topic per page; `docs/README.md` is the index) and are published to <https://elenagoto.github.io/timonel/> by `.github/workflows/docs.yml` (Zensical, pinned version, config in `mkdocs.yml`; Pages source must be "GitHub Actions"). The root `README.md` is a short landing page only: keep it that way and link to `docs/` instead of growing it.
+
+- **When a command's behaviour changes, update the matching `docs/` page in the same commit** (`commands.md` plus the guide for that command; `how-it-works.md` for internals).
+- New pages go in `docs/`, in the `nav:` of `mkdocs.yml`, and in the index table of `docs/README.md`.
+- Pages must read well on GitHub and on the site: relative links between pages, plain `>` blockquotes for notes, no emoji in headings, no `\|` inside table cells (it renders literally on the site).
+- Check before committing: `docker run --rm -v "$PWD":/docs --entrypoint zensical zensical/zensical:0.1.1 build --clean` must report "No issues found" (then delete the `site/` it creates; it's git-ignored anyway). Preview: `docker run --rm -it -p 8000:8000 -v "$PWD":/docs zensical/zensical` → <http://localhost:8000/timonel/>.
+
 ## Conventions when adding/editing scripts
 
 - `set -e` at the top of every script; colored output via the same `RED/GREEN/YELLOW/BLUE/NC` ANSI variable block copy-pasted per script.

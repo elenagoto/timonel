@@ -1,0 +1,50 @@
+# Build the documentation in docs/ with Zensical and publish it to GitHub
+# Pages (https://elenagoto.github.io/timonel/) on every push to main.
+# Based on Zensical's official workflow:
+# https://zensical.org/docs/publish-your-site/
+# Requires: Settings → Pages → Source: "GitHub Actions".
+
+name: Documentation
+
+on:
+  push:
+    branches:
+      - main
+    # Only rebuild when the docs or their config change
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - ".github/workflows/docs.yml"
+  # Allow a manual run from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push replaces a waiting one
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/configure-pages@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.x
+      # Pinned: a new Zensical version only changes the site when this line is updated
+      - run: pip install zensical==0.1.1
+      - run: zensical build --clean
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+      - uses: actions/deploy-pages@v5
+        id: deployment

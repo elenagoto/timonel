@@ -166,11 +166,24 @@ timonel history [--errors]                # command log (phase 4)
 
 ## Docs (alongside each phase)
 
-- [ ] Rewrite README around stacks, `new` vs `add`, and `dev`
+- [x] Rewrite README around stacks, `new` vs `add`, and `dev` — superseded by the docs refactor below
   - [x] Phase 1: Stacks section; Vite and Parcel usage; features list includes Vite/Parcel *(audit)*; no longer points to a missing `example` environment block *(audit)*
   - [x] Phase 2: `new` vs `add` (Usage overview table), single `dev`, Laravel usage and dev mode, database info for PHP projects, `remove` behaviour, common mistake "`new` on a downloaded project"
 - [x] Add an MIT `LICENSE` file (Copyright 2025-2026 Laura Gomez); README badge now links to it, plus a platform badge (macOS | Linux)
 - [ ] Update CLAUDE.md after each phase (done through phase 3: "formerly Dockerator", redesign status)
+
+## Docs refactor (2026-11-12)
+
+Decisions: a `docs/` folder in the repo (versioned with the code), published as a website; README as a short landing page; English only; user guides plus one contributor page.
+
+- [x] `docs/`: index (`README.md`), getting started (incl. uninstall), creating projects, existing projects, dev mode, commands, databases and mail, troubleshooting (merged with "common mistakes"); stale advice fixed on the way
+- [x] `docs/how-it-works.md` for contributors: architecture, stacks, compose file, scripts, layout, adding a framework, conventions, testing, docs preview
+- [x] Site config `mkdocs.yml`; builder **Zensical** 0.1.1 (Material for MkDocs successor; Material reaches end of life on 2027-05-05 and can still build the same file). Strict link/anchor checks pass with both
+- [x] README: 518 → 60 lines (identity, features, quick start, docs table, contributing, license)
+- [x] `.github/workflows/docs.yml`: Zensical's official Pages workflow, `main` only, Zensical pinned, docs paths only
+- [x] CLAUDE.md: "Documentation" section (update `docs/` with behaviour changes; page conventions; build check)
+- [ ] Turn on GitHub Pages (Settings → Pages → Source: GitHub Actions), push, check <https://elenagoto.github.io/timonel/>
+- [ ] Later: bump Zensical (pinned in the workflow) once past 0.1.x; consider `actions/setup-python@v7` (the workflow uses v6, as in Zensical's docs)
 
 ## Dropped
 
