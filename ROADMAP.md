@@ -96,9 +96,11 @@ timonel history [--errors]                # command log (phase 4)
   - [x] Node 20 (end-of-life April 2026) → `node:24-alpine` everywhere (also in the PHP image, replacing `setup_20.x`)
   - [x] FrankenPHP `latest-php8.3` → `1-php8.4` (major version pinned; current Laravel supports PHP 8.4)
   - [x] Pin `adminer:6` and `axllent/mailpit:v1.32` instead of `latest`
-- [ ] **Templates** *(audit)*:
-  - [ ] Next: add ESLint with Next's recommended config and a `lint` script (Next 16 removed `next lint`; dev mode already advertises `npm run lint`)
-  - [ ] Parcel: update `parcel` 2.12; drop or replace `eslint@8` + `eslint-config-react-app` (end-of-life/unmaintained) and `react-feather` (→ `lucide-react`); move lint tools to devDependencies; `styles.css` is loaded twice
+- [x] **Templates** *(audit)*:
+  - [x] Next: ESLint 9 with `eslint-config-next` (Core Web Vitals + TypeScript) and a `lint` script, matching `create-next-app`; Next ^16.4.6; `@types/node` ^24; tsconfig aligned with Next 16 (`jsx: react-jsx`). TypeScript stays on 5, as `create-next-app` still uses it
+  - [x] Parcel: `parcel` ^2.16.4; dropped `eslint@8` + `eslint-config-react-app` (no lint script used them); `react-feather` → `lucide-react`; build tools moved to devDependencies; `styles.css` only imported from `src/index.js`
+  - Verified: Next lint/type-check/dev pass; Parcel dev and production build pass
+- Note for phase 2: `create-next-app` (and possibly other scaffolders) fails when run in a container as your user id (`os.userInfo()` finds no account). Vite's doesn't. Container scaffolding for those needs another way to keep file ownership (e.g. run as root, then `chown`).
 
 ## Phase 2: `add` and unified `dev`
 

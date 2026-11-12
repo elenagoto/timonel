@@ -9,21 +9,19 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "eslint": "^8.49.0",
-    "eslint-config-react-app": "^7.0.1",
-    "parcel": "2.12.0",
-    "parcel-reporter-static-files-copy": "1.5.2",
-    "process": "0.11.10",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-feather": "2.0.10",
-    "rimraf": "^5.0.1"
+    "lucide-react": "^1.72.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "parcel": "^2.16.4",
+    "parcel-reporter-static-files-copy": "^1.5.3",
+    "prettier": "^3.10.0",
+    "process": "^0.11.10",
+    "rimraf": "^6.1.4"
   },
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "staticFiles": {
     "staticPath": "assets"
-  },
-  "devDependencies": {
-    "prettier": "^3.6.2"
   }
 }

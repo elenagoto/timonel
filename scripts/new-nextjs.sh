@@ -94,6 +94,7 @@ else
         scripts/templates/nextjs/layout.tsx > "$APP_DIR/src/app/layout.tsx"
     cp scripts/templates/nextjs/styles.css "$APP_DIR/src/app/styles.css"
     cp scripts/templates/nextjs/tsconfig.json "$APP_DIR/tsconfig.json"
+    cp scripts/templates/nextjs/eslint.config.mjs "$APP_DIR/eslint.config.mjs"
     mkdir -p "$APP_DIR/src/components"
     mkdir -p "$APP_DIR/public"   # Next.js only serves public/ from the project root
 
