@@ -56,16 +56,13 @@ show_menu() {
     echo "Available commands:"
     echo "  up                 - Start all containers"
     echo "  down               - Stop all containers"
-    echo "  new <type> <name>  - Create new project (nextjs, wp, vite, parcel)"
+    echo "  new <type> <name>  - Create new project (nextjs, vite, parcel, wp)"
     echo "  open <name>        - Open a project in VS Code"
     echo "  remove <name>      - Remove a project"
     echo "  start <name>       - Start a specific project"
     echo "  stop <name>        - Stop a specific project"
-    echo "  restart <name>        - Restart with a full dependency reinstall"
-    echo "  dev-wp <name>      - Enter WordPress/Laravel dev mode (with Vite)"
-    echo "  dev-nextjs <name>  - Enter Next.js dev mode"
-    echo "  dev-vite <name>    - Enter Vite React dev mode"
-    echo "  dev-front <name>   - Enter Frontend dev mode (for vite & nextjs)"
+    echo "  restart <name>     - Restart with a full dependency reinstall"
+    echo "  dev <name>         - Open a dev shell in a project (WordPress/Laravel: with Vite's port 5173)"
     echo "  list               - List all projects"
     echo "  logs <name>        - View logs for a project"
     echo "  hosts              - Sync /etc/hosts with all *.localhost domains"
@@ -88,7 +85,7 @@ COMMAND=$1
 # (rm -rf apps/<name>), sed replacements or SQL
 case $COMMAND in
     new) NAME_ARG=${3-} ;;
-    remove|open|start|stop|restart|logs|dev-wp|dev-front|dev-nextjs|dev-vite) NAME_ARG=${2-} ;;
+    remove|open|start|stop|restart|logs|dev) NAME_ARG=${2-} ;;
     *) NAME_ARG="" ;;
 esac
 
@@ -165,23 +162,14 @@ case $COMMAND in
         PROJECT_NAME=$2
         ./scripts/open-project.sh "$PROJECT_NAME"
         ;;
-    dev-wp)
+    dev)
         if [ -z "$2" ]; then
             echo -e "${RED}Usage: dockerator dev <project-name>${NC}"
             exit 1
         fi
-        
+
         PROJECT_NAME=$2
-        ./scripts/dev-mode-php.sh "$PROJECT_NAME"
-        ;;
-    dev-front|dev-nextjs|dev-vite)
-        if [ -z "$2" ]; then
-            echo -e "${RED}Usage: dockerator dev-frontend <project-name>${NC}"
-            exit 1
-        fi
-        
-        PROJECT_NAME=$2
-        ./scripts/dev-mode-frontend.sh "$PROJECT_NAME"
+        ./scripts/dev-project.sh "$PROJECT_NAME"
         ;;
     hosts)
         echo "DEBUG: Running sync-hosts.sh"

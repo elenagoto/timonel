@@ -95,7 +95,7 @@ SERVICE_FILE=$(mktemp)
         echo "      - ./apps/$APP_NAME/Caddyfile:/etc/caddy/Caddyfile"
     fi
 
-    # No fixed ports for php: dockerator dev-wp publishes 5173 (Vite HMR)
+    # No fixed ports for php: `dockerator dev` publishes 5173 (Vite HMR)
     # only while dev mode is open, so several projects can run side by side
 
     if [ -n "$WEB_ROOT" ] || [ "$WITH_DB" = "--with-db" ]; then

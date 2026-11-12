@@ -37,9 +37,15 @@ if [ -z "$ALL_SERVICES" ]; then
     exit 0
 fi
 
+# Name column as wide as the longest project name (at least 20)
+NAME_WIDTH=20
+for project in $ALL_SERVICES; do
+    [ ${#project} -ge $NAME_WIDTH ] && NAME_WIDTH=$((${#project} + 1))
+done
+
 # Header
-echo -e "${BLUE}PROJECT              TYPE           STATUS           URL${NC}"
-echo "────────────────────────────────────────────────────────────────────────"
+printf "%b%-${NAME_WIDTH}s %-14s %-16s %s%b\n" "$BLUE" "PROJECT" "TYPE" "STATUS" "URL" "$NC"
+printf '─%.0s' $(seq 1 $((NAME_WIDTH + 52))); echo
 
 # Display projects
 for project in $ALL_SERVICES; do
@@ -52,20 +58,10 @@ for project in $ALL_SERVICES; do
     fi
 
     # Determine type: the framework label written by add-to-compose.sh,
-    # else guess from files (WordPress and projects created before labels)
-    FRAMEWORK=$(service_label "$project" dockerator.framework)
+    # else a guess from the project's files (projects created before labels)
+    FRAMEWORK=$(project_framework "$project" || true)
     if [ -n "$FRAMEWORK" ]; then
         TYPE_NAME=$(framework_setting "$FRAMEWORK" display 2>/dev/null || echo "$FRAMEWORK")
-    elif [ -f "$dir/artisan" ]; then
-        TYPE_NAME="Laravel"
-    elif [ -f "$dir/wp-config.php" ]; then
-        TYPE_NAME="WordPress"
-    elif [ -f "$dir/vite.config.js" ] || [ -f "$dir/vite.config.ts" ]; then
-        TYPE_NAME="Vite"
-    elif [ -f "$dir/.parcelrc" ]; then
-        TYPE_NAME="Parcel"
-    elif [ -f "$dir/package.json" ]; then
-        TYPE_NAME="Next.js"
     else
         TYPE_NAME="Unknown"
     fi
@@ -91,7 +87,7 @@ for project in $ALL_SERVICES; do
     URL="http://$project.localhost"
 
     # Pad the plain text, then wrap it in colour codes, so columns line up
-    printf "%-20s %b%-14s%b %b %-14s %s\n" \
+    printf "%-${NAME_WIDTH}s %b%-14s%b %b %-14s %s\n" \
         "$project" "$TYPE_COLOR" "$TYPE_NAME" "$NC" "$STATUS_DOT" "$STATUS_TEXT" "$URL"
 done
 
@@ -99,10 +95,7 @@ echo ""
 echo "Commands:"
 echo "  dockerator start <project>             - Start a specific project"
 echo "  dockerator stop <project>              - Stop a specific project"
-echo "  dockerator dev-wp <project>            - Enter WordPress dev mode (with Vite)"
-echo "  dockerator dev-nextjs <project>        - Enter Next.js dev mode"
-echo "  dockerator dev-vite <project>          - Enter Vite React dev mode"
-echo "  dockerator dev-front <project>         - Enter Frontend dev mode (for vite & nextjs)"
+echo "  dockerator dev <project>               - Open a dev shell in the project"
 echo "  dockerator logs <project>              - View project logs"
 echo "  dockerator open <project>              - Open in VS Code"
 echo ""

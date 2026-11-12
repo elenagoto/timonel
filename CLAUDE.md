@@ -17,7 +17,7 @@ There is no build/lint/test suite — this is a shell script toolkit. To work on
 dockerator up / down                # start/stop shared services (Traefik, MySQL, Adminer, Mailpit)
 dockerator new nextjs|wp|vite|parcel <name> [--with-db]   # scaffold a project
 dockerator start|stop|restart <name>
-dockerator dev-nextjs|dev-vite|dev-front|dev-wp <name>    # shells into the running container
+dockerator dev <name>               # dev shell in the project (scripts/dev-project.sh picks node or php dev mode)
 dockerator list                     # scripts/list-projects.sh
 dockerator logs [name]              # docker-compose logs -f
 dockerator hosts                    # syncs *.localhost entries into /etc/hosts (needs sudo)
@@ -45,7 +45,7 @@ Manually testing a change to a `scripts/*.sh` file means running the correspondi
 
 **Database wiring is opt-in for Node projects, automatic for WordPress.** Next.js, Vite and Parcel projects only get `DB_*` env vars + `depends_on: mysql (service_healthy)` in their compose block when `--with-db` is passed to `new` (threaded through to `add-to-compose.sh`; the dispatcher rejects any other flag). WordPress (`new-wordpress.sh`) always provisions a database. WordPress and `--with-db` Node projects both go through `scripts/create-db.sh <safe_db>`, which starts MySQL if needed (`up -d --wait mysql`) and idempotently creates the database + user (name = user = password). WordPress bakes the credentials into `wp-config.php` from `scripts/templates/wordpress/wp-config.php.template`, and gets a `wp-content/mu-plugins/dockerator-mailpit.php` that routes `wp_mail` to Mailpit.
 
-**PHP dev mode doesn't edit `docker-compose.yml`.** PHP services have no fixed `ports:`; `dev-mode-php.sh` (the `dev-wp` command) publishes 5173 (Vite HMR) via a temporary `-f` override file and recreates the container without it on exit. It opens WordPress in its theme folder and Laravel in `/app`, using the `dockerator.framework` label (or `wp-config.php` / `artisan` for unlabelled projects).
+**PHP dev mode doesn't edit `docker-compose.yml`.** PHP services have no fixed `ports:`; `dev-mode-php.sh` (reached via `dev`) publishes 5173 (Vite HMR) via a temporary `-f` override file and recreates the container without it on exit. It opens WordPress in its theme folder and Laravel in `/app`, using the `dockerator.framework` label (or `wp-config.php` / `artisan` for unlabelled projects).
 
 **Live-reload volume pattern.** Every project block bind-mounts the whole app dir (`./apps/<name>:/app`). Node projects also get anonymous volumes for the framework's `cache_volumes` (always `/app/node_modules`, plus `/app/.next` for Next.js) so the host's (possibly absent/stale) `node_modules` doesn't clobber the container's. PHP projects shadow nothing: `vendor/` and theme `node_modules` stay in the project folder so the editor can see them. This is why a plain restart doesn't pick up new dependencies — `scripts/restart-project.sh` exists specifically to `docker-compose build --no-cache` and `up --force-recreate --renew-anon-volumes`, discarding that anonymous volume so `npm install` reruns.
 

@@ -67,3 +67,40 @@ KNOWN_FRAMEWORKS="next vite parcel wordpress laravel"
 is_known_framework() {
     framework_setting "$1" stack >/dev/null 2>&1
 }
+
+# Guess a project's framework from its files. Prints the framework, or
+# nothing (exit 1) if it can't tell.
+# Order matters: Laravel and WordPress projects often have a package.json
+# too (for Vite), so the PHP checks come first.
+#   Usage: detect_framework apps/<folder>
+detect_framework() {
+    local dir="$1"
+    if [ -f "$dir/artisan" ] && grep -q '"laravel/framework"' "$dir/composer.json" 2>/dev/null; then
+        echo "laravel"
+    elif [ -f "$dir/wp-config.php" ] || [ -f "$dir/wp-load.php" ] || [ -d "$dir/wp-content" ]; then
+        echo "wordpress"
+    elif [ -f "$dir/package.json" ] && grep -qE '"next"[[:space:]]*:' "$dir/package.json"; then
+        echo "next"
+    elif [ -f "$dir/package.json" ] && grep -qE '"vite"[[:space:]]*:' "$dir/package.json"; then
+        echo "vite"
+    elif [ -f "$dir/package.json" ] && grep -qE '"parcel"[[:space:]]*:' "$dir/package.json"; then
+        echo "parcel"
+    else
+        return 1
+    fi
+}
+
+# The framework of a registered project: its dockerator.framework label,
+# else a guess from its files (projects created before labels existed).
+# Needs scripts/lib/project.sh and scripts/lib/compose.sh sourced as well.
+#   Usage: project_framework <project-name>
+project_framework() {
+    local safe framework
+    safe=$(to_safe_name "$1")
+    framework=$(service_label "$safe" dockerator.framework)
+    if [ -n "$framework" ]; then
+        echo "$framework"
+    else
+        detect_framework "apps/$(resolve_app_dir_name "$1")"
+    fi
+}

@@ -16,6 +16,13 @@ Tracks the redesign and rename of this tool. Tick items off as they land.
 - `remove` always deletes the project folder after confirmation, also for projects brought in with `add`.
 - License: MIT.
 - New Next.js projects get ESLint with Next's recommended config and a `lint` script.
+- Phase 2 decisions:
+  - Template names stay short: `nextjs`, `vite`, `parcel`, `wp`, plus `laravel`.
+  - `new` only creates fresh projects: if `apps/<name>` already exists it stops and suggests `add`.
+  - `add` auto-detects the framework, then **always asks you to confirm** it (or pick another).
+  - `remove` asks whether to also delete the project's database and user; the default (Enter) keeps them.
+  - The old `dev-wp`, `dev-front`, `dev-nextjs`, `dev-vite` commands are removed; only `dev` remains.
+  - `new laravel` creates the plain skeleton; `--kit react|vue|livewire` adds a Laravel starter kit.
 
 ---
 
@@ -25,8 +32,8 @@ Tracks the redesign and rename of this tool. Tick items off as they land.
 
 ```bash
 timonel up | down                         # shared services (Traefik, MySQL, Adminer, Mailpit)
-timonel new <template> <name> [--with-db] # scaffold: next, vite-react, parcel-react, wordpress, laravel
-timonel add <name> [--with-db]            # dockerize an existing apps/<name>, framework auto-detected
+timonel new <template> <name> [--with-db] # scaffold: nextjs, vite, parcel, wp, laravel [--kit react|vue|livewire]
+timonel add <name> [--with-db]            # dockerize an existing apps/<name>; framework detected, then confirmed
 timonel dev <name>                        # shell into the project (php: also publishes Vite port 5173)
 timonel start | stop | restart <name>
 timonel list | open <name> | logs [name] | remove <name> | hosts
@@ -104,16 +111,18 @@ timonel history [--errors]                # command log (phase 4)
 
 ## Phase 2: `add` and unified `dev`
 
-- [ ] `add <name>`: detect the framework, copy Dockerfile and `.dockerignore` only if missing, never touch app files
-- [ ] Move the "existing Next.js project" behaviour from `new nextjs` into `add`; `new` always scaffolds
-- [ ] `dev <name>`: one command; the php stack publishes 5173 during the session; tailored hints per framework
-- [ ] Remove `dev-wp`, `dev-front`, `dev-nextjs`, `dev-vite`
+- [ ] `add <name>`: detect the framework, **ask to confirm or pick another**, copy the stack's Docker files only if missing, never touch app files
+- [ ] Move the "existing Next.js project" behaviour from `new nextjs` into `add`; `new` stops with "use `add`" if `apps/<name>` exists
+- [x] `dev <name>`: one command (`dev-project.sh` → `dev-mode-node.sh` / `dev-mode-php.sh`); the php stack publishes 5173 during the session; tailored hints per framework
+- [x] Remove `dev-wp`, `dev-front`, `dev-nextjs`, `dev-vite` (dispatcher, completions, `list` footer, docs)
+- [x] Shared framework detection (`detect_framework`, `project_framework` in `frameworks.sh`): label first, else files; Laravel/WordPress checked before `package.json`. Used by `dev` and `list`; `add` will reuse it
 - [ ] Flags are validated: an unknown or misplaced flag is an error, not silently ignored *(audit: `--with-db` was ignored for non-Next types)*. Already done for `new` (phase 1); do the same for `add` and the other commands.
-- [ ] Replace the remaining `grep "^  name:"` checks with `project_service_exists` in start/stop/restart/dev-front/remove as they're rewritten (from phase 1)
-- [ ] `remove` cleanup *(audit)*: delete anonymous volumes (`rm -v`), the built image, and optionally the project's database and user; run `hosts` instead of telling you to edit `/etc/hosts` with nano
+- [ ] Replace the remaining `grep "^  name:"` checks with `project_service_exists` in start/stop/restart/remove as they're rewritten (from phase 1; dev mode done)
+- [ ] `remove` cleanup *(audit)*: delete anonymous volumes (`rm -v`) and the built image; **ask** whether to delete the project's database and user (default: keep); run `hosts` instead of telling you to edit `/etc/hosts` with nano
 - [ ] Verify `down` and `logs` (no name) include project containers, which sit in the `projects` profile. Add `--profile projects` if not.
 - [ ] **Laravel**:
   - [ ] `new laravel <name>`: `composer create-project laravel/laravel` in a temporary container
+  - [ ] `--kit react|vue|livewire`: create from Laravel's starter kit instead (check which version `laravel new` installs: the kits' tagged releases date from Feb 2025)
   - [ ] Write `.env` (MySQL instead of the SQLite default, Mailpit, `APP_URL=http://<name>.localhost`), then `key:generate` and `migrate`
   - [ ] Database via `create-db.sh` (always, like WordPress)
   - [ ] `add` detects Laravel and fills in a missing `.env` from `.env.example` with the same settings

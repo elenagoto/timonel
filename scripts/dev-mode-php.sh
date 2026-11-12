@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Enter development mode for a PHP project (WordPress, Laravel)
-# Usage: ./dev-mode-php.sh <project-name>
+# Development mode for a PHP project (WordPress, Laravel)
+# Usage: ./dev-mode-php.sh <project-name> [framework]
+# Normally called through dev-project.sh (the `dev` command), which passes
+# the framework; without it, the framework is looked up here.
 #
 # Publishes port 5173 (Vite HMR) for this project only while dev mode is open.
 # The port is added through a temporary compose override file, so
@@ -15,6 +17,7 @@ source scripts/lib/compose.sh
 source scripts/lib/frameworks.sh
 
 PROJECT_NAME=$1
+FRAMEWORK=$2
 SAFE_URL=$(to_safe_name "$PROJECT_NAME")
 VITE_PORT=5173
 
@@ -39,20 +42,14 @@ fi
 # The folder can differ from the service name (folder my_site, service my-site)
 APP_DIR_NAME=$(resolve_app_dir_name "$PROJECT_NAME")
 
-# Framework from the compose label; projects created before labels existed
-# are recognised from their files
-FRAMEWORK=$(service_label "$SAFE_URL" dockerator.framework)
+# Framework: passed in by dev-project.sh, else label or files
 if [ -z "$FRAMEWORK" ]; then
-    if [ -f "apps/$APP_DIR_NAME/artisan" ]; then
-        FRAMEWORK="laravel"
-    elif [ -f "apps/$APP_DIR_NAME/wp-config.php" ]; then
-        FRAMEWORK="wordpress"
-    fi
+    FRAMEWORK=$(project_framework "$PROJECT_NAME" || true)
 fi
 
 if [ "$(framework_setting "$FRAMEWORK" stack 2>/dev/null)" != "php" ]; then
     echo -e "${RED}❌ Error: '$PROJECT_NAME' is not a PHP project (WordPress/Laravel)${NC}"
-    echo "   For Next.js, Vite or Parcel use: dockerator dev-front $PROJECT_NAME"
+    echo "   Use: dockerator dev $PROJECT_NAME"
     exit 1
 fi
 

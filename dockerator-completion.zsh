@@ -32,10 +32,7 @@ _dockerator() {
         'start:Start specific project'
         'stop:Stop specific project'
         'restart:Restart with full dependency reinstall'
-        'dev-wp:WordPress/Laravel dev mode'
-        'dev-nextjs:Next.js dev mode'
-        'dev-vite:Vite dev mode'
-        'dev-front:Frontend dev mode'
+        'dev:Open a dev shell in a project'
         'hosts:Sync /etc/hosts'
         'help:Show help'
     )
@@ -62,7 +59,7 @@ _dockerator() {
                 new)
                     _describe 'type' types && ret=0
                     ;;
-                open|logs|remove|start|stop|restart|dev-wp|dev-nextjs|dev-vite|dev-front)
+                open|logs|remove|start|stop|restart|dev)
                     _describe 'project' projects && ret=0
                     ;;
             esac

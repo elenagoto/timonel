@@ -73,7 +73,7 @@ Every project runs on one of two shared setups. The framework only decides a few
 | Stack | Frameworks | Image | Dev server port |
 | --- | --- | --- | --- |
 | **node** | Next.js, Vite, Parcel | `node:24-alpine` (`scripts/templates/stacks/node/`) | Next.js 3000, Vite 5173, Parcel 1234 |
-| **php** | WordPress (Laravel coming) | FrankenPHP 1.x, PHP 8.4, Composer, Node 24 (`scripts/templates/stacks/php/`) | 80 (+ 5173 for Vite while `dev-wp` is open) |
+| **php** | WordPress (Laravel coming) | FrankenPHP 1.x, PHP 8.4, Composer, Node 24 (`scripts/templates/stacks/php/`) | 80 (+ 5173 for Vite while `dev` is open) |
 
 Each project's block in `docker-compose.yml` is labelled with its stack and framework (`dockerator.stack`, `dockerator.framework`), which `list` and dev mode read.
 
@@ -166,11 +166,15 @@ In short: **the TypeScript default only applies to brand-new projects scaffolded
 
 ---
 
-### 🎨 WordPress Development with Vite
+### 🧑‍💻 Dev Mode
+
+One command for every project: `dockerator dev <name>` opens a shell inside the project's container, with hints for its framework. It recognises the framework by itself.
+
+#### WordPress (with Vite)
 
 ```bash
-# Enter dev mode (exposes port 5173 for Vite HMR)
-dockerator dev-wp my-site
+# Enter dev mode (also publishes port 5173 for Vite HMR)
+dockerator dev my-site
 
 # Inside container (you start in the theme folder):
   npm install    - Install theme dependencies
@@ -184,19 +188,13 @@ Port 5173 is only published while dev mode is open, so several WordPress project
 
 **Your theme location:** `apps/my-site/wp-content/themes/my-site/`
 
----
-
-### 💻 Next.js / Vite / Parcel Development
+#### Next.js / Vite / Parcel
 
 ```bash
-# Enter dev mode
-dockerator dev-nextjs my-app
-# or
-dockerator dev-vite my-app
-# or
-dockerator dev-front my-app
+# Enter dev mode (starts the container if needed)
+dockerator dev my-app
 
-# Inside container:
+# Inside container (you start in /app):
 📦 Installing new packages (the dev server keeps running):
   npm install <package>  - Install package
   # If the app doesn't pick it up: exit, then
@@ -205,9 +203,10 @@ dockerator dev-front my-app
   # so the container would stop with it.
 
 🔧 Other commands:
-  npm run build       - Build for production
-  npm run lint         - Lint code (Next.js projects)
-  npm run type-check   - Check TypeScript types without building (Next.js projects)
+  npm run build        - Build for production
+  npm run lint         - Lint code (Next.js; Vite if the project defines it)
+  npm run type-check   - Check TypeScript types without building (Next.js)
+  npm run format       - Format code with Prettier (Parcel)
 
 # When done: exit
 ```
@@ -256,8 +255,9 @@ dockerator/
 │   │   └── project.sh              # Shared helpers: name validation, folder lookup
 │   ├── add-to-compose.sh           # Add any project (Next.js, Vite, Parcel, WordPress) to compose
 │   ├── create-db.sh                # Create a MySQL database + user (starts MySQL if needed)
-│   ├── dev-mode-frontend.sh        # Enter Next.js/Vite dev mode
-│   ├── dev-mode-php.sh             # Enter WordPress/Laravel dev mode
+│   ├── dev-mode-node.sh            # Dev mode for Next.js/Vite/Parcel (called by dev-project.sh)
+│   ├── dev-mode-php.sh             # Dev mode for WordPress/Laravel (called by dev-project.sh)
+│   ├── dev-project.sh              # `dev` command: picks the right dev mode for the project
 │   ├── list-projects.sh            # List all projects
 │   ├── new-nextjs.sh               # Create Next.js project
 │   ├── new-parcel.sh               # Create Parcel project
@@ -343,9 +343,9 @@ dockerator new nextjs my-app --with-db   # Next.js with DB
 
 ### Port 5173 Already in Use (WordPress dev mode)
 
-Only one WordPress project can be in `dev-wp` mode at a time, because Vite HMR needs port 5173. Exit the other dev-mode shell first.
+Only one WordPress project can be in dev mode at a time, because Vite HMR needs port 5173. Exit the other dev-mode shell first.
 
-WordPress projects created with older Dockerator versions publish 5173 **permanently** (a `ports: - "5173:5173"` entry in their `docker-compose.yml` block). This blocks other projects from using the port even outside dev mode. Delete those two lines from that project's block; `dockerator dev-wp` now publishes the port only while dev mode is open.
+WordPress projects created with older Dockerator versions publish 5173 **permanently** (a `ports: - "5173:5173"` entry in their `docker-compose.yml` block). This blocks other projects from using the port even outside dev mode. Delete those two lines from that project's block; `dockerator dev` now publishes the port only while dev mode is open.
 
 ### Next.js Project Has No DB Env Vars
 
