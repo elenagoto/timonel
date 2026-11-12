@@ -1,6 +1,6 @@
 # Dockerator 🐳
 
-> A Docker orchestration CLI tool for managing multiple Next.js, Vite, Parcel and WordPress projects with automatic routing and zero configuration.
+> A Docker orchestration CLI tool for running many local projects side by side (Next.js, Vite, Parcel, WordPress, Laravel) with automatic routing and zero configuration. Create new projects, or drop in ones you downloaded.
 
 Inspired by devner by [MarJC5](https://github.com/MarJC5).
 
@@ -10,13 +10,15 @@ Inspired by devner by [MarJC5](https://github.com/MarJC5).
 
 ## ✨ Features
 
-- 🚀 **One-command project creation** - `dockerator new nextjs|vite|parcel|wp <name>`
+- 🚀 **One-command project creation** - `dockerator new nextjs|vite|parcel|wp|laravel <name>`, Laravel with optional starter kits (`--kit react|vue|svelte|livewire`)
+- 📥 **Bring your own project** - `dockerator add <name>` dockerizes a downloaded project (course repo, client site) without touching its code
+- 🧑‍💻 **One dev command** - `dockerator dev <name>` opens a shell in any project, with hints for its framework
 - 📘 **TypeScript by default** - New Next.js projects scaffold as TypeScript (strict mode) with ESLint, not JavaScript
-- 🧱 **Two shared images** - one Node 24 image for every JavaScript project, one PHP 8.4 (FrankenPHP) image for WordPress
-- 🐳 **Only Docker needed** - no Node.js, npm or PHP on your machine; even Vite's scaffolder runs in a container
+- 🧱 **Two shared images** - one Node 24 image for every JavaScript project, one PHP 8.4 (FrankenPHP) image for WordPress and Laravel
+- 🐳 **Only Docker needed** - no Node.js, npm, PHP or Composer on your machine; even the scaffolders run in containers
 - 🗄️ **Shared services** - MySQL, Adminer, Mailpit across all projects
-- 🔌 **Opt-in DB wiring** - `--with-db` flag connects Next.js, Vite and Parcel projects to MySQL on demand
-- 🔄 **Hot reload** - Changes reflect immediately (Next.js, Vite, Parcel, and Vite in WordPress themes)
+- 🔌 **Database wiring** - automatic for WordPress and Laravel; opt-in (`--with-db`) for Next.js, Vite and Parcel
+- 🔄 **Hot reload** - Changes reflect immediately (Next.js, Vite, Parcel, and Vite in WordPress themes and Laravel)
 - 🌐 **Clean URLs** - `project-name.localhost` for each project
 - 🔐 **Auto /etc/hosts sync** - No manual editing
 - 📋 **Project management** - List, open, and manage all projects
@@ -61,7 +63,7 @@ dockerator hosts
 - 🗄️ **Adminer** (Database): http://dockerator-adminer.localhost
   - Server: `mysql` | User: `root` | Pass: `dockerator`
 - 📧 **Mailpit** (Email Testing): http://dockerator-mailpit.localhost
-  - WordPress projects send all their mail here automatically (via a small `dockerator-mailpit.php` must-use plugin)
+  - WordPress projects send all their mail here automatically (via a small `dockerator-mailpit.php` must-use plugin), and so do Laravel projects (`MAIL_HOST=mailpit` in their `.env`)
   - Other apps: SMTP host `mailpit`, port `1025`, no auth/TLS
 
 ---
@@ -75,11 +77,19 @@ Every project runs on one of two shared setups. The framework only decides a few
 | **node** | Next.js, Vite, Parcel | `node:24-alpine` (`scripts/templates/stacks/node/`) | Next.js 3000, Vite 5173, Parcel 1234 |
 | **php** | WordPress, Laravel | FrankenPHP 1.x, PHP 8.4, Composer, Node 24 (`scripts/templates/stacks/php/`) | 80 (+ 5173 for Vite while `dev` is open) |
 
-Each project's block in `docker-compose.yml` is labelled with its stack and framework (`dockerator.stack`, `dockerator.framework`), which `list` and dev mode read.
+Each project's block in `docker-compose.yml` is labelled with its stack and framework (`dockerator.stack`, `dockerator.framework`), which `list`, `dev` and `restart` read.
 
 ---
 
 ## 📖 Usage
+
+Three commands cover a project's life:
+
+| You want to… | Command | |
+| --- | --- | --- |
+| Start a **new** project from a template | `dockerator new <type> <name>` | [Creating Projects](#creating-projects) |
+| Run a project you **already have** in `apps/<name>` | `dockerator add <name>` | [Bringing In Existing Projects](#-bringing-in-existing-projects) |
+| Work inside a project (install packages, run tools) | `dockerator dev <name>` | [Dev Mode](#-dev-mode) |
 
 ### Creating Projects
 
@@ -189,7 +199,7 @@ dockerator start my-course-app
 
 ---
 
-### 🧑‍💻 Dev Mode
+### 💻 Dev Mode
 
 One command for every project: `dockerator dev <name>` opens a shell inside the project's container, with hints for its framework. It recognises the framework by itself.
 
@@ -256,15 +266,19 @@ dockerator dev my-app
 ### 🛠️ Managing Projects
 
 ```bash
-dockerator list            # List all projects with status
+dockerator up              # Start the shared services (Traefik, MySQL, Adminer, Mailpit)
+dockerator down            # Stop everything, projects included
+dockerator list            # List all projects with type and status
 dockerator open <name>     # Open project in VS Code
 dockerator start <name>    # Start project
 dockerator stop <name>     # Stop project
 dockerator restart <name>  # Restart and reinstall dependencies (Node: fresh node_modules; Laravel: composer + npm install)
-dockerator logs <name>     # View logs
+dockerator logs [name]     # Follow logs (one project, or everything)
 dockerator remove <name>   # Remove project completely (container, its volumes and image, folder; asks before deleting its database)
 dockerator hosts           # Sync /etc/hosts
 ```
+
+Projects don't start with `dockerator up`; start each one with `dockerator start <name>` (or `dev`, which starts it if needed). Every command accepts the folder name or the URL form of a project (`my_app` or `my-app`), and rejects options it doesn't know instead of ignoring them.
 
 ---
 
@@ -322,18 +336,20 @@ dockerator/
 
 ## 🗄️ Database Info
 
-### WordPress Projects
+### WordPress and Laravel Projects
 
-Each WordPress site automatically gets the following when it's created (`dockerator new wp` starts MySQL itself if it isn't running):
+Each WordPress or Laravel project automatically gets the following when it's created with `new` or brought in with `add` (MySQL is started first if it isn't running):
 
 - **Database**: `project_name` (underscores)
 - **User**: `project_name`
 - **Password**: `project_name`
 - **Host**: `mysql`
 
+WordPress gets them in `wp-config.php`; Laravel in `.env` (`DB_CONNECTION=mysql`, `DB_HOST=mysql`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`).
+
 ### Next.js, Vite and Parcel Projects
 
-Database wiring is **opt-in** via the `--with-db` flag (see [Usage](#-usage) above) — not automatic like WordPress. Same naming convention applies:
+Database wiring is **opt-in** via the `--with-db` flag on `new` or `add` — not automatic like WordPress and Laravel. Same naming convention applies:
 
 - **Database**: `project_name` (underscores)
 - **User**: `project_name`
@@ -341,6 +357,8 @@ Database wiring is **opt-in** via the `--with-db` flag (see [Usage](#-usage) abo
 - **Host**: `mysql`
 
 Access all databases via Adminer: http://dockerator-adminer.localhost
+
+`dockerator remove` asks whether to delete a project's database too; pressing Enter keeps it.
 
 ---
 
@@ -369,7 +387,7 @@ dockerator hosts
 open http://localhost:8080
 ```
 
-### WordPress Can't Connect to Database
+### WordPress or Laravel Can't Connect to Database
 
 ```bash
 # Wait ~30 seconds for MySQL to be healthy
@@ -382,13 +400,15 @@ dockerator logs mysql
 If the database itself is missing, for example because the site was created while MySQL was stopped with an older Dockerator version, run `add` on the project. It's safe on a project that's already set up and only creates what's missing:
 
 ```bash
-dockerator add my-site                # WordPress
+dockerator add my-site                # WordPress or Laravel
 dockerator add my-app --with-db       # Node project with a database
 ```
 
-### Port 5173 Already in Use (WordPress dev mode)
+For a Laravel project brought in with its own `.env`, check that `.env` uses `DB_HOST=mysql` and the database name above; `add` prints the exact values when it doesn't.
 
-Only one WordPress project can be in dev mode at a time, because Vite HMR needs port 5173. Exit the other dev-mode shell first.
+### Port 5173 Already in Use (WordPress / Laravel dev mode)
+
+Only one WordPress or Laravel project can be in dev mode at a time, because Vite HMR needs port 5173. Exit the other dev-mode shell first.
 
 WordPress projects created with older Dockerator versions publish 5173 **permanently** (a `ports: - "5173:5173"` entry in their `docker-compose.yml` block). This blocks other projects from using the port even outside dev mode. Delete those two lines from that project's block; `dockerator dev` now publishes the port only while dev mode is open.
 
@@ -413,10 +433,10 @@ Two possible reasons, both expected:
 docker run --rm -v "$(pwd)":/data alpine rm -rf /data/apps/project-name
 ```
 
-### First WordPress Build is Slow
+### First WordPress or Laravel Build is Slow
 
-- **First WP project**: ~2-3 minutes (installs PHP extensions, Composer and Node.js)
-- **Second WP project**: much faster, since every PHP project shares the same image layers (Docker cache)
+- **First PHP project**: ~2-3 minutes (installs PHP extensions, Composer and Node.js)
+- **Next PHP projects**: much faster, since every WordPress and Laravel project shares the same image layers (Docker cache)
 - **Reopening existing**: Instant! ⚡
 
 ---
@@ -441,9 +461,19 @@ nano docker-compose.yml.example  # ✅ Edit the template
 cp docker-compose.yml.example docker-compose.yml
 ```
 
-### ❌ Not waiting for MySQL
+### ❌ Using `new` for a project you downloaded
 
-Wait ~30 seconds after `dockerator up` before accessing WordPress sites.
+```bash
+# Wrong:
+dockerator new nextjs course-app   # ❌ stops: apps/course-app already exists
+
+# Right:
+dockerator add course-app          # ✅ detects the framework, keeps your code as is
+```
+
+### ❌ Not waiting for MySQL on the very first start
+
+The first `dockerator up` downloads and initialises MySQL, which takes ~30 seconds. Projects that need it wait for it automatically; Adminer may show a connection error until then.
 
 ---
 
@@ -453,7 +483,7 @@ Contributions welcome! Fork, create a feature branch, and open a PR.
 
 ### Ideas for Contributions
 
-- [ ] Laravel support
+- [ ] Laravel queue worker and scheduler
 - [ ] GUI dashboard (web-based)
 - [ ] Backup/restore functionality
 - [ ] Windows support (WSL2)

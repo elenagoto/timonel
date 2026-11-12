@@ -109,11 +109,11 @@ timonel history [--errors]                # command log (phase 4)
   - Verified: Next lint/type-check/dev pass; Parcel dev and production build pass
 - Note for phase 2: `create-next-app` (and possibly other scaffolders) fails when run in a container as your user id (`os.userInfo()` finds no account). Vite's doesn't. Container scaffolding for those needs another way to keep file ownership (e.g. run as root, then `chown`).
 
-## Phase 2: `add` and unified `dev`
+## Phase 2: `add`, unified `dev`, Laravel (done: commits 97faaed, 9567d03, 81dbb68, 11a357a, 67703ca + docs)
 
 - [x] `add <name> [--with-db]` (`add-project.sh`): detect the framework, **ask to confirm or pick another**, copy the stack's Docker files only if missing, never touch app files (WordPress: adds the Mailpit mu-plugin if missing, *prints* DB settings if `wp-config.php` doesn't use `mysql`); safe to re-run on a registered project; `add <Tab>` suggests unregistered folders
 - [x] Move the "existing Next.js project" behaviour from `new nextjs` into `add`; `new` stops with "use `add`" if `apps/<name>` exists (or the service name is taken)
-- [ ] Laravel part of `add` (fill a missing `.env`): in the Laravel group below
+- [x] Laravel part of `add` (fill a missing `.env`): done in the Laravel group below
 - [x] `dev <name>`: one command (`dev-project.sh` → `dev-mode-node.sh` / `dev-mode-php.sh`); the php stack publishes 5173 during the session; tailored hints per framework
 - [x] Remove `dev-wp`, `dev-front`, `dev-nextjs`, `dev-vite` (dispatcher, completions, `list` footer, docs)
 - [x] Shared framework detection (`detect_framework`, `project_framework` in `frameworks.sh`): label first, else files; Laravel/WordPress checked before `package.json`. Used by `dev` and `list`; `add` will reuse it
@@ -131,7 +131,7 @@ timonel history [--errors]                # command log (phase 4)
   - [x] `restart` re-runs `composer install` + `npm install` + build (and no longer rebuilds the PHP image, which holds no project deps)
   - [x] `storage/` writable through the bind mount (checked on macOS). On Linux, files are created as your user (`--user`), so it should hold there too, but it's untested on Linux.
   - Verified end to end (isolated scratch stack): plain project and React kit served (HTTP 200, login page for the kit), migrations in MySQL, files owned by the user; Vite dev server reachable from the Mac with CORS for `*.localhost`; `add` on a downloaded repo (no `.env`/`vendor`/`node_modules`) → served in 17 s; `restart`; re-running `add`
-  - [ ] Out of scope for now: queue worker, scheduler, Octane
+  - Out of scope for now (README "Ideas for Contributions"): queue worker, scheduler, Octane
 
 ## Phase 3: Rename to timonel and fresh setup
 
@@ -160,7 +160,7 @@ timonel history [--errors]                # command log (phase 4)
 
 - [ ] Rewrite README around stacks, `new` vs `add`, and `dev`
   - [x] Phase 1: Stacks section; Vite and Parcel usage; features list includes Vite/Parcel *(audit)*; no longer points to a missing `example` environment block *(audit)*
-  - [ ] Phase 2: `new` vs `add`, single `dev`, Laravel
+  - [x] Phase 2: `new` vs `add` (Usage overview table), single `dev`, Laravel usage and dev mode, database info for PHP projects, `remove` behaviour, common mistake "`new` on a downloaded project"
 - [ ] Add an MIT `LICENSE` file (the README already links to it)
 - [ ] Update CLAUDE.md after each phase
 
