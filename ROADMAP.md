@@ -132,6 +132,10 @@ timonel history [--errors]                # command log (phase 4)
 - [ ] `install.sh` *(audit)*: quote `$(pwd)`; work from any directory; add the zsh completion folder to `fpath`; remove the old `dockerator` symlink and completion if present
 - [ ] **Fresh start** (confirm the exact list before deleting): old project containers and images, `apps/*`, `dockerator_mysql_data` volume, `dockerator` network, old `/etc/hosts` block. *Leave `devner_mysql_data` alone: it belongs to another tool.*
 - [ ] Rename the local folder and the GitHub repo (you), then update the clone URL in the README
+  - **Rename** `elenagoto/dockerator` → `timonel` in GitHub's repo settings. GitHub then redirects the old URL (web pages and `git clone/pull/push`) to the new one, so the link already sent on CVs keeps working.
+  - **Never create a new repo named `dockerator`** on the account: GitHub drops the redirect when the old name is reused, and CV visitors would land on that repo instead.
+  - Add "Formerly known as Dockerator" near the top of the README, so visitors from the old link know they're in the right place.
+  - Update the CV link for future applications (old copies keep working via the redirect).
 - [ ] `hosts` becomes optional: drop the "run `hosts`" reminders and `/etc/hosts` checks from `new`/`add`/`remove`; README explains when it's needed
 
 ## Phase 4: Command log

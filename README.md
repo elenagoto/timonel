@@ -2,7 +2,7 @@
 
 > A Docker orchestration CLI tool for managing multiple Next.js, Vite, Parcel and WordPress projects with automatic routing and zero configuration.
 
-Inspired by [devner](https://github.com/MarJC5/devner).
+Inspired by devner by [MarJC5](https://github.com/MarJC5).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -431,7 +431,7 @@ MIT - see [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **[devner](https://github.com/MarJC5/devner)** by [MarJC5](https://github.com/MarJC5) - The inspiration
+- **devner** by [MarJC5](https://github.com/MarJC5) - The inspiration
 - **[Traefik](https://traefik.io/)** - Dynamic reverse proxy
 - **[FrankenPHP](https://frankenphp.dev/)** - Modern PHP application server
 
