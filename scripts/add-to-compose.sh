@@ -1,13 +1,16 @@
 #!/bin/bash
 
-# Add a Node project service to docker-compose.yml
+# Add a project service to docker-compose.yml
 # Usage: ./add-to-compose.sh <app-name> <framework> [--with-db]
-#   framework: next | vite | parcel (see scripts/lib/frameworks.sh)
+#   framework: next | vite | parcel | wordpress | laravel
+#              (see scripts/lib/frameworks.sh)
 #
-# Port, cache volumes and dev-server flags come from the framework settings,
-# so every Node framework gets the same block shape. The block is labelled
-# with its stack and framework so other commands don't have to guess.
-# (WordPress still uses add-to-compose-wp.sh.)
+# Port, volumes, dev-server flags and web root come from the framework
+# settings, so every framework of a stack gets the same block shape. The
+# block is labelled with its stack and framework so other commands don't
+# have to guess.
+#   node stack: database only with --with-db
+#   php stack:  always gets a database (--with-db is implied)
 
 set -e
 
@@ -31,14 +34,15 @@ if ! is_known_framework "$FRAMEWORK"; then
 fi
 
 STACK=$(framework_setting "$FRAMEWORK" stack)
-if [ "$STACK" != "node" ]; then
-    echo "❌ Error: '$FRAMEWORK' is a $STACK project; only the node stack is handled here"
-    exit 1
-fi
 
 if [ -n "$WITH_DB" ] && [ "$WITH_DB" != "--with-db" ]; then
     echo "❌ Error: Unknown option '$WITH_DB' (expected --with-db)"
     exit 1
+fi
+
+# PHP projects always get a database
+if [ "$STACK" = "php" ]; then
+    WITH_DB="--with-db"
 fi
 
 SAFE_NAME=$(to_safe_name "$APP_NAME")
@@ -52,7 +56,8 @@ fi
 
 PORT=$(framework_setting "$FRAMEWORK" port)
 CACHE_VOLUMES=$(framework_setting "$FRAMEWORK" cache_volumes)
-DEV_ARGS=$(framework_setting "$FRAMEWORK" dev_args)
+DEV_ARGS=$(framework_setting "$FRAMEWORK" dev_args 2>/dev/null || true)
+WEB_ROOT=$(framework_setting "$FRAMEWORK" web_root 2>/dev/null || true)
 
 # Build the service block line by line (echo, not a heredoc, so nothing in
 # it is ever run as a command substitution)
@@ -85,9 +90,21 @@ SERVICE_FILE=$(mktemp)
     for path in $CACHE_VOLUMES; do
         echo "      - $path"
     done
+    if [ "$STACK" = "php" ]; then
+        # The project's own Caddyfile (copied from templates/stacks/php)
+        echo "      - ./apps/$APP_NAME/Caddyfile:/etc/caddy/Caddyfile"
+    fi
 
-    if [ "$WITH_DB" = "--with-db" ]; then
+    # No fixed ports for php: dockerator dev-wp publishes 5173 (Vite HMR)
+    # only while dev mode is open, so several projects can run side by side
+
+    if [ -n "$WEB_ROOT" ] || [ "$WITH_DB" = "--with-db" ]; then
         echo "    environment:"
+    fi
+    if [ -n "$WEB_ROOT" ]; then
+        echo "      - WEB_ROOT=$WEB_ROOT"
+    fi
+    if [ "$WITH_DB" = "--with-db" ]; then
         echo "      - DB_NAME=$SAFE_DB"
         echo "      - DB_USER=$SAFE_DB"
         echo "      - DB_PASSWORD=$SAFE_DB"

@@ -32,7 +32,7 @@ _dockerator() {
         'start:Start specific project'
         'stop:Stop specific project'
         'restart:Restart with full dependency reinstall'
-        'dev-wp:WordPress dev mode'
+        'dev-wp:WordPress/Laravel dev mode'
         'dev-nextjs:Next.js dev mode'
         'dev-vite:Vite dev mode'
         'dev-front:Frontend dev mode'

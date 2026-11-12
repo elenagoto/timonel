@@ -1,0 +1,12 @@
+{
+	frankenphp
+}
+
+:80 {
+	# Web root per framework, from docker-compose.yml:
+	#   WordPress /app, Laravel /app/public
+	root * {$WEB_ROOT:/app}
+	encode gzip
+	# Serves PHP through index.php and static files directly
+	php_server
+}

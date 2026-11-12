@@ -77,20 +77,20 @@ timonel history [--errors]                # command log (phase 4)
 ## Phase 1: Restructure into stacks and templates
 
 - [x] One Node Dockerfile and one compose generator for the node stack (`templates/stacks/node/`, `add-to-compose.sh`; replaces the 3 near-identical `add-to-compose-*` scripts and Dockerfiles)
-- [x] Per-framework settings table for Node (`scripts/lib/frameworks.sh`: stack, port, cache volumes, dev args, display name)
-  - [ ] Add the php entries (wordpress, laravel: port 80, web root) in group 4
-- [x] Write stack/framework labels into Node service blocks; `list` reads them
-  - [ ] WordPress blocks too (group 4)
+- [x] Per-framework settings table (`scripts/lib/frameworks.sh`: stack, port, cache volumes, dev args, web root, display name)
+  - [x] php entries: wordpress and laravel (port 80, web root `/app` / `/app/public`)
+- [x] Write stack/framework labels into every service block (Node and PHP); `list` and PHP dev mode read them
 - [x] `--with-db` works for Next.js, Vite and Parcel; the dispatcher rejects unknown flags after the name (WordPress always gets a database)
 - [ ] Vite's runtime is untested with the shared image (needs a scaffolded app, which group 5 does in a container). Next.js and Parcel were built and served from it.
-- [ ] php stack: one shared PHP image and compose generator for WordPress and Laravel
-  - [ ] Union of PHP extensions: mysqli, pdo_mysql, gd, imagick, exif, intl, zip, opcache, bcmath, pcntl
-  - [ ] Composer in the image
-  - [ ] Caddyfile web root from the framework settings (`/app` or `/app/public`)
-  - [ ] Dev port 5173 mechanism from `dev-mode-wp.sh` generalised to the whole php stack
+- [x] php stack: one shared PHP image (`templates/stacks/php/`) and the same `add-to-compose.sh` for WordPress and Laravel (`add-to-compose-wp.sh` removed)
+  - [x] Union of PHP extensions: mysqli, pdo_mysql, gd, imagick, exif, intl, zip, opcache, bcmath, pcntl
+  - [x] Composer in the image (plus git/unzip for it)
+  - [x] Caddyfile web root from the framework settings via `WEB_ROOT` (`/app` or `/app/public`)
+  - [x] Dev port 5173 mechanism generalised to the whole php stack (`dev-mode-php.sh`, still the `dev-wp` command until phase 2)
+  - Verified: a scaffolded WordPress reaches its install page against MySQL; a Laravel 13 app created with `composer create-project` inside the image is served from `public/`
 - [ ] Scaffolding runs in a temporary container (Vite: drop the "npm required on your Mac" prerequisite)
 - [x] Shared helper that lists project services from the `services:` section only. Used by `list` and both completions. *(Audit: `grep "^  name:"` also matches the `dockerator:` network key, and filtering on "mysql" hides projects with "mysql" in their name.)*
-- [ ] Use it for the per-script "is this project in the compose file?" checks too (`project_service_exists`). Done in `add-to-compose.sh` and the three Node `new-*` scripts; still `grep "^  name:"` in the WordPress scripts (group 4) and in start/stop/restart/dev/remove (phase 2 rewrites them).
+- [ ] Use it for the per-script "is this project in the compose file?" checks too (`project_service_exists`). Done in `add-to-compose.sh`, all four `new-*` scripts and `dev-mode-php.sh`; still `grep "^  name:"` in start/stop/restart/dev-front/remove (phase 2 rewrites them).
 - [x] Make the compose insert keep the last line of the file *(found while testing: the `while read` loop drops a final line without a trailing newline, e.g. `driver: bridge`)*
 - [x] **Updates** *(audit)*:
   - [x] Node 20 (end-of-life April 2026) → `node:24-alpine` everywhere (also in the PHP image, replacing `setup_20.x`)

@@ -15,6 +15,7 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 MAGENTA='\033[0;35m'
+RED='\033[0;31m'
 NC='\033[0m'
 
 echo -e "${BLUE}📋 Dockerator Projects${NC}"
@@ -55,6 +56,8 @@ for project in $ALL_SERVICES; do
     FRAMEWORK=$(service_label "$project" dockerator.framework)
     if [ -n "$FRAMEWORK" ]; then
         TYPE_NAME=$(framework_setting "$FRAMEWORK" display 2>/dev/null || echo "$FRAMEWORK")
+    elif [ -f "$dir/artisan" ]; then
+        TYPE_NAME="Laravel"
     elif [ -f "$dir/wp-config.php" ]; then
         TYPE_NAME="WordPress"
     elif [ -f "$dir/vite.config.js" ] || [ -f "$dir/vite.config.ts" ]; then
@@ -68,6 +71,7 @@ for project in $ALL_SERVICES; do
     fi
     case "$TYPE_NAME" in
         WordPress) TYPE_COLOR=$CYAN ;;
+        Laravel)   TYPE_COLOR=$RED ;;
         Vite)      TYPE_COLOR=$YELLOW ;;
         Next.js)   TYPE_COLOR=$GREEN ;;
         Parcel)    TYPE_COLOR=$MAGENTA ;;

@@ -62,7 +62,7 @@ show_menu() {
     echo "  start <name>       - Start a specific project"
     echo "  stop <name>        - Stop a specific project"
     echo "  restart <name>        - Restart with a full dependency reinstall"
-    echo "  dev-wp <name>      - Enter WordPress dev mode (with Vite)"
+    echo "  dev-wp <name>      - Enter WordPress/Laravel dev mode (with Vite)"
     echo "  dev-nextjs <name>  - Enter Next.js dev mode"
     echo "  dev-vite <name>    - Enter Vite React dev mode"
     echo "  dev-front <name>   - Enter Frontend dev mode (for vite & nextjs)"
@@ -172,7 +172,7 @@ case $COMMAND in
         fi
         
         PROJECT_NAME=$2
-        ./scripts/dev-mode-wp.sh "$PROJECT_NAME"
+        ./scripts/dev-mode-php.sh "$PROJECT_NAME"
         ;;
     dev-front|dev-nextjs|dev-vite)
         if [ -z "$2" ]; then

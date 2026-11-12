@@ -5,6 +5,9 @@
 
 set -e
 
+source scripts/lib/project.sh
+source scripts/lib/compose.sh
+
 APP_NAME=$1
 APP_DIR="apps/$APP_NAME"
 
@@ -21,7 +24,7 @@ fi
 
 # Sanitize names
 SAFE_NAME=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]' | tr '-' '_')  # For database: hello_friend
-SAFE_URL=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]' | tr '_' '-')   # For URL: hello-friend
+SAFE_URL=$(to_safe_name "$APP_NAME")   # For URL: hello-friend
 
 echo -e "${BLUE}Creating WordPress project: $APP_NAME${NC}"
 echo ""
@@ -67,27 +70,16 @@ else
     echo -e "${YELLOW}⚠️  Theme directory already exists${NC}"
 fi
 # ============================================
-# STEP 3: Copy Dockerfile and Caddyfile
+# STEP 3: Copy Dockerfile, .dockerignore and Caddyfile (shared PHP stack)
 # ============================================
-if [ ! -f "$APP_DIR/Dockerfile" ]; then
-    cp scripts/templates/wordpress/Dockerfile "$APP_DIR/"
-    echo -e "${GREEN}✅ Created Dockerfile${NC}"
-else
-    echo -e "${YELLOW}⚠️  Dockerfile already exists${NC}"
-fi
-if [ ! -f "$APP_DIR/.dockerignore" ]; then
-    cp scripts/templates/wordpress/.dockerignore "$APP_DIR/"
-    echo -e "${GREEN}✅ Created .dockerignore${NC}"
-else
-    echo -e "${YELLOW}⚠️ .dockerignore already exists${NC}"
-fi
-
-if [ ! -f "$APP_DIR/Caddyfile" ]; then
-    cp scripts/templates/wordpress/Caddyfile "$APP_DIR/"
-    echo -e "${GREEN}✅ Created Caddyfile${NC}"
-else
-    echo -e "${YELLOW}⚠️  Caddyfile already exists${NC}"
-fi
+for file in Dockerfile .dockerignore Caddyfile; do
+    if [ ! -f "$APP_DIR/$file" ]; then
+        cp "scripts/templates/stacks/php/$file" "$APP_DIR/"
+        echo -e "${GREEN}✅ Created $file${NC}"
+    else
+        echo -e "${YELLOW}⚠️  $file already exists${NC}"
+    fi
+done
 
 # Route WordPress mail to Mailpit (WordPress ignores SMTP_* constants alone)
 MU_PLUGIN="$APP_DIR/wp-content/mu-plugins/dockerator-mailpit.php"
@@ -130,11 +122,11 @@ echo ""
 # STEP 6: Add to docker-compose.yml
 # ============================================
 echo ""
-if grep -q "^  $SAFE_URL:" docker-compose.yml; then
+if project_service_exists "$SAFE_URL"; then
     echo -e "${YELLOW}⚠️  Already in docker-compose.yml${NC}"
 else
-    # Create service block for WordPress
-    ./scripts/add-to-compose-wp.sh "$APP_NAME"
+    # Create service block for WordPress (php stack, always with a database)
+    ./scripts/add-to-compose.sh "$APP_NAME" wordpress
 fi
 
 # ============================================

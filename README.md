@@ -214,25 +214,23 @@ dockerator/
 ├── dockerator-completion.zsh       # Zsh autocomplete
 ├── scripts/
 │   ├── templates/                  # Project templates
-│   │   ├── stacks/node/            # Shared Dockerfile + .dockerignore for every Node project
+│   │   ├── stacks/
+│   │   │   ├── node/               # Shared Dockerfile + .dockerignore for every Node project
+│   │   │   └── php/                # Shared FrankenPHP image + Caddyfile for WordPress and Laravel
 │   │   ├── nextjs/                 # Next.js starter files (package.json, tsconfig.json, page.tsx, layout.tsx...)
 │   │   ├── parcel/                 # Parcel + React starter files
 │   │   ├── vite/                   # (scaffolded by Vite's own tool)
 │   │   └── wordpress/
-│   │       ├── .gitkeep
-│   │       ├── Caddyfile
-│   │       ├── Dockerfile
 │   │       ├── dockerator-mailpit.php  # Must-use plugin: WordPress mail -> Mailpit
 │   │       └── wp-config.php.template
 │   ├── lib/
 │   │   ├── compose.sh              # Read/edit docker-compose.yml (insert, list projects, labels)
-│   │   ├── frameworks.sh           # Per-framework settings: port, cache volumes, dev flags
+│   │   ├── frameworks.sh           # Per-framework settings: stack, port, volumes, dev flags, web root
 │   │   └── project.sh              # Shared helpers: name validation, folder lookup
-│   ├── add-to-compose.sh           # Add a Node project (Next.js, Vite, Parcel) to compose
-│   ├── add-to-compose-wp.sh        # Add WordPress to compose
+│   ├── add-to-compose.sh           # Add any project (Next.js, Vite, Parcel, WordPress) to compose
 │   ├── create-db.sh                # Create a MySQL database + user (starts MySQL if needed)
 │   ├── dev-mode-frontend.sh        # Enter Next.js/Vite dev mode
-│   ├── dev-mode-wp.sh              # Enter WordPress dev mode
+│   ├── dev-mode-php.sh             # Enter WordPress/Laravel dev mode
 │   ├── list-projects.sh            # List all projects
 │   ├── new-nextjs.sh               # Create Next.js project
 │   ├── new-parcel.sh               # Create Parcel project

@@ -1,0 +1,27 @@
+# The image doesn't copy the project (it's bind-mounted at /app), so keep
+# the build context small: skip dependencies, uploads, caches and logs.
+
+# Dependencies
+node_modules
+vendor
+
+# WordPress
+wp-content/uploads
+wp-content/cache
+wp-content/upgrade
+wp-content/backup-db
+
+# Laravel
+storage/logs
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+bootstrap/cache
+
+# Local-only files
+.git
+.vscode
+.DS_Store
+npm-debug.log
+.env*.local
+README.md

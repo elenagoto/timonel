@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Enter development mode for a WordPress project
-# Usage: ./dev-mode-wp.sh <project-name>
+# Enter development mode for a PHP project (WordPress, Laravel)
+# Usage: ./dev-mode-php.sh <project-name>
 #
 # Publishes port 5173 (Vite HMR) for this project only while dev mode is open.
 # The port is added through a temporary compose override file, so
@@ -11,6 +11,8 @@
 set -e
 
 source scripts/lib/project.sh
+source scripts/lib/compose.sh
+source scripts/lib/frameworks.sh
 
 PROJECT_NAME=$1
 SAFE_URL=$(to_safe_name "$PROJECT_NAME")
@@ -29,16 +31,38 @@ if [ -z "$PROJECT_NAME" ]; then
 fi
 
 # Check if project exists
-if ! grep -q "^  $SAFE_URL:" docker-compose.yml; then
+if ! project_service_exists "$SAFE_URL"; then
     echo -e "${RED}❌ Error: Project '$PROJECT_NAME' not found in docker-compose.yml${NC}"
     exit 1
 fi
 
-# The theme folder is named after the project folder (which may differ from
-# the service name, e.g. folder my_site vs service my-site)
-THEME_DIR="/app/wp-content/themes/$(resolve_app_dir_name "$PROJECT_NAME")"
+# The folder can differ from the service name (folder my_site, service my-site)
+APP_DIR_NAME=$(resolve_app_dir_name "$PROJECT_NAME")
 
-echo -e "${BLUE}🔧 Setting up development environment for $PROJECT_NAME...${NC}"
+# Framework from the compose label; projects created before labels existed
+# are recognised from their files
+FRAMEWORK=$(service_label "$SAFE_URL" dockerator.framework)
+if [ -z "$FRAMEWORK" ]; then
+    if [ -f "apps/$APP_DIR_NAME/artisan" ]; then
+        FRAMEWORK="laravel"
+    elif [ -f "apps/$APP_DIR_NAME/wp-config.php" ]; then
+        FRAMEWORK="wordpress"
+    fi
+fi
+
+if [ "$(framework_setting "$FRAMEWORK" stack 2>/dev/null)" != "php" ]; then
+    echo -e "${RED}❌ Error: '$PROJECT_NAME' is not a PHP project (WordPress/Laravel)${NC}"
+    echo "   For Next.js, Vite or Parcel use: dockerator dev-front $PROJECT_NAME"
+    exit 1
+fi
+
+# Where the shell opens
+case "$FRAMEWORK" in
+    wordpress) WORK_DIR="/app/wp-content/themes/$APP_DIR_NAME" ;;  # the project's theme
+    *)         WORK_DIR="/app" ;;
+esac
+
+echo -e "${BLUE}🔧 Setting up development environment for $PROJECT_NAME ($(framework_setting "$FRAMEWORK" display))...${NC}"
 
 # Projects created by older Dockerator versions publish 5173 permanently in
 # docker-compose.yml. Don't add it a second time for those.
@@ -70,29 +94,40 @@ if [ "$ALREADY_PUBLISHED" = "yes" ]; then
 else
     echo -e "${BLUE}📝 Publishing Vite port ($VITE_PORT) for $PROJECT_NAME...${NC}"
     OVERRIDE_DIR=$(mktemp -d)
-    cat > "$OVERRIDE_DIR/dev-wp.override.yml" << EOF
+    cat > "$OVERRIDE_DIR/dev.override.yml" << EOF
 services:
   $SAFE_URL:
     ports:
       - "$VITE_PORT:$VITE_PORT"
 EOF
     # Recreates the container with the extra port (starts it if stopped)
-    docker-compose -f docker-compose.yml -f "$OVERRIDE_DIR/dev-wp.override.yml" \
+    docker-compose -f docker-compose.yml -f "$OVERRIDE_DIR/dev.override.yml" \
         --profile projects up -d "$SAFE_URL"
 fi
 
 echo -e "${GREEN}✅ Container ready${NC}"
 echo ""
 echo -e "${BLUE}📂 Entering development environment...${NC}"
-echo -e "${YELLOW}Theme directory: $THEME_DIR${NC}"
+echo -e "${YELLOW}Working directory: $WORK_DIR${NC}"
 echo ""
 echo "Available commands:"
-echo "  npm run dev    - Start Vite dev server (with HMR)"
-echo "  npm run build  - Build for production"
-echo "  npm install    - Install dependencies"
+case "$FRAMEWORK" in
+    laravel)
+        echo "  php artisan <command>  - Artisan (migrate, make:model, tinker...)"
+        echo "  composer install       - Install PHP dependencies"
+        echo "  npm install            - Install front-end dependencies"
+        echo "  npm run dev            - Start Vite dev server (with HMR)"
+        echo "  npm run build          - Build assets for production"
+        ;;
+    *)
+        echo "  npm install    - Install theme dependencies"
+        echo "  npm run dev    - Start Vite dev server (with HMR)"
+        echo "  npm run build  - Build for production"
+        ;;
+esac
 echo ""
 echo -e "${YELLOW}Type 'exit' when done to cleanup${NC}"
 echo ""
 
-# Enter the container at the theme directory
-docker-compose exec "$SAFE_URL" sh -c "cd '$THEME_DIR' && exec sh"
+# Enter the container at the working directory
+docker-compose exec "$SAFE_URL" sh -c "cd '$WORK_DIR' && exec sh"

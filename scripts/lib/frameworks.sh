@@ -15,14 +15,17 @@
 #   cache_volumes  container paths shadowed by anonymous volumes, so the
 #                  host's node_modules / build caches never clobber the
 #                  container's (space-separated)
-#   dev_args       extra arguments for `npm run dev --` (empty if none)
+#   dev_args       node only: extra arguments for `npm run dev --` (empty if none)
+#   web_root       php only: document root inside the container (Caddy's
+#                  WEB_ROOT; templates/stacks/php/Caddyfile)
 #   display        human-readable name for `list`
 #
-# Adding a Node framework = adding its lines here (plus a template folder
-# if it can be scaffolded with `new`).
+# Adding a framework = adding its lines here (plus a template folder if it
+# can be scaffolded with `new`).
 
 framework_setting() {
     case "$1:$2" in
+        # ---- node stack ----
         next:stack|vite:stack|parcel:stack)  echo "node" ;;
 
         next:port)    echo "3000" ;;
@@ -41,11 +44,25 @@ framework_setting() {
         vite:display)    echo "Vite" ;;
         parcel:display)  echo "Parcel" ;;
 
+        # ---- php stack (FrankenPHP; always gets a database) ----
+        wordpress:stack|laravel:stack)  echo "php" ;;
+        wordpress:port|laravel:port)    echo "80" ;;
+
+        # Dependencies stay in the project folder (vendor/ must be visible
+        # to the editor), so nothing is shadowed
+        wordpress:cache_volumes|laravel:cache_volumes)  echo "" ;;
+
+        wordpress:web_root)  echo "/app" ;;
+        laravel:web_root)    echo "/app/public" ;;
+
+        wordpress:display)  echo "WordPress" ;;
+        laravel:display)    echo "Laravel" ;;
+
         *) return 1 ;;
     esac
 }
 
-KNOWN_FRAMEWORKS="next vite parcel"
+KNOWN_FRAMEWORKS="next vite parcel wordpress laravel"
 
 is_known_framework() {
     framework_setting "$1" stack >/dev/null 2>&1
