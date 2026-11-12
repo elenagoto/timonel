@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Create a MySQL database and a user with the same name and password
-# in the shared dockerator_mysql container.
+# in the shared timonel_mysql container.
 # Usage: ./create-db.sh <db-name>
 #
 # Starts MySQL (and waits until it is healthy) if it isn't running yet.
@@ -34,7 +34,7 @@ echo -e "${BLUE}🗄️  Setting up database '$DB_NAME'...${NC}"
 echo -e "${BLUE}   Waiting for MySQL to be ready...${NC}"
 docker-compose up -d --wait mysql
 
-docker exec -e MYSQL_PWD=dockerator dockerator_mysql mysql -uroot -e "
+docker exec -e MYSQL_PWD=timonel timonel_mysql mysql -uroot -e "
     CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     CREATE USER IF NOT EXISTS '$DB_NAME'@'%' IDENTIFIED BY '$DB_NAME';
     GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_NAME'@'%';

@@ -43,7 +43,7 @@ fi
 
 if [ ! -d "$APP_DIR" ]; then
     echo -e "${RED}❌ Error: Folder $APP_DIR doesn't exist${NC}"
-    echo "   Put the project in apps/ first, or create a new one with: dockerator new <type> $APP_NAME"
+    echo "   Put the project in apps/ first, or create a new one with: timonel new <type> $APP_NAME"
     exit 1
 fi
 
@@ -128,10 +128,10 @@ done
 # ============================================
 if [ "$FRAMEWORK" = "wordpress" ]; then
     # Route WordPress mail to Mailpit
-    MU_PLUGIN="$APP_DIR/wp-content/mu-plugins/dockerator-mailpit.php"
+    MU_PLUGIN="$APP_DIR/wp-content/mu-plugins/timonel-mailpit.php"
     if [ -d "$APP_DIR/wp-content" ] && [ ! -f "$MU_PLUGIN" ]; then
         mkdir -p "$APP_DIR/wp-content/mu-plugins"
-        cp scripts/templates/wordpress/dockerator-mailpit.php "$MU_PLUGIN"
+        cp scripts/templates/wordpress/timonel-mailpit.php "$MU_PLUGIN"
         echo -e "${GREEN}✅ Created Mailpit mu-plugin${NC}"
     fi
 
@@ -204,6 +204,6 @@ echo ""
 echo -e "${GREEN}🎉 Project '$APP_NAME' is ready to run in Docker${NC}"
 echo ""
 echo "Next steps:"
-echo "  1. Start container: dockerator start $SAFE_NAME"
+echo "  1. Start container: timonel start $SAFE_NAME"
 echo "  2. Access app: http://$SAFE_NAME.localhost"
-echo "  3. Dev shell: dockerator dev $SAFE_NAME"
+echo "  3. Dev shell: timonel dev $SAFE_NAME"

@@ -82,10 +82,10 @@ for file in Dockerfile .dockerignore Caddyfile; do
 done
 
 # Route WordPress mail to Mailpit (WordPress ignores SMTP_* constants alone)
-MU_PLUGIN="$APP_DIR/wp-content/mu-plugins/dockerator-mailpit.php"
+MU_PLUGIN="$APP_DIR/wp-content/mu-plugins/timonel-mailpit.php"
 if [ ! -f "$MU_PLUGIN" ]; then
     mkdir -p "$APP_DIR/wp-content/mu-plugins"
-    cp scripts/templates/wordpress/dockerator-mailpit.php "$MU_PLUGIN"
+    cp scripts/templates/wordpress/timonel-mailpit.php "$MU_PLUGIN"
     echo -e "${GREEN}✅ Created Mailpit mu-plugin${NC}"
 else
     echo -e "${YELLOW}⚠️  Mailpit mu-plugin already exists${NC}"
@@ -139,7 +139,7 @@ if grep -q "$SAFE_URL.localhost" /etc/hosts 2>/dev/null; then
     echo -e "${GREEN}✅ $SAFE_URL.localhost already in /etc/hosts${NC}"
 else
     echo -e "${YELLOW}⚠️  Domain not in /etc/hosts yet${NC}"
-    echo "   Run: dockerator hosts"
+    echo "   Run: timonel hosts"
 fi
 
 echo ""
@@ -151,8 +151,8 @@ echo "  User: $SAFE_NAME"
 echo "  Password: $SAFE_NAME"
 echo ""
 echo "Next steps:"
-echo "  1. Sync hosts: dockerator hosts"
-echo "  2. Start container: dockerator start $SAFE_URL"
+echo "  1. Sync hosts: timonel hosts"
+echo "  2. Start container: timonel start $SAFE_URL"
 echo "  3. Visit: http://$SAFE_URL.localhost"
 echo "  4. Complete WordPress installation"
 echo ""

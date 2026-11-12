@@ -13,8 +13,8 @@ fi
 
 COMPOSE_FILE="docker-compose.yml"
 HOSTS_FILE="/etc/hosts"
-MARKER_START="# Dockerator managed hosts - DO NOT EDIT MANUALLY"
-MARKER_END="# End Dockerator managed hosts"
+MARKER_START="# Timonel managed hosts - DO NOT EDIT MANUALLY"
+MARKER_END="# End Timonel managed hosts"
 
 # Colors
 GREEN='\033[0;32m'
@@ -70,9 +70,9 @@ TEMP_HOSTS=$(mktemp)
 
 # Check if markers already exist in /etc/hosts
 if grep -q "$MARKER_START" "$HOSTS_FILE" 2>/dev/null; then
-    echo -e "${YELLOW}⚠️  Dockerator entries already exist, replacing...${NC}"
+    echo -e "${YELLOW}⚠️  Timonel entries already exist, replacing...${NC}"
     
-    # Remove old Dockerator block and add new one
+    # Remove old Timonel block and add new one
     sudo sed -i.bak "/$MARKER_START/,/$MARKER_END/d" "$HOSTS_FILE"
 fi
 
@@ -84,5 +84,5 @@ rm "$TEMP_HOSTS"
 
 echo -e "${GREEN}✅ /etc/hosts updated successfully!${NC}"
 echo ""
-echo -e "${BLUE}Current Dockerator domains in /etc/hosts:${NC}"
+echo -e "${BLUE}Current Timonel domains in /etc/hosts:${NC}"
 sudo sed -n "/$MARKER_START/,/$MARKER_END/p" "$HOSTS_FILE"

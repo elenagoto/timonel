@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Dockerator Mailpit
- * Description: Sends all WordPress mail to the shared Mailpit service (http://dockerator-mailpit.localhost). Added by Dockerator.
+ * Plugin Name: Timonel Mailpit
+ * Description: Sends all WordPress mail to the shared Mailpit service (http://timonel-mailpit.localhost). Added by Timonel.
  */
 
 // WordPress ignores SMTP_* constants on its own; route PHPMailer through

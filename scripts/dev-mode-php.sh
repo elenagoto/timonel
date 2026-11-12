@@ -49,7 +49,7 @@ fi
 
 if [ "$(framework_setting "$FRAMEWORK" stack 2>/dev/null)" != "php" ]; then
     echo -e "${RED}❌ Error: '$PROJECT_NAME' is not a PHP project (WordPress/Laravel)${NC}"
-    echo "   Use: dockerator dev $PROJECT_NAME"
+    echo "   Use: timonel dev $PROJECT_NAME"
     exit 1
 fi
 
@@ -61,7 +61,7 @@ esac
 
 echo -e "${BLUE}🔧 Setting up development environment for $PROJECT_NAME ($(framework_setting "$FRAMEWORK" display))...${NC}"
 
-# Projects created by older Dockerator versions publish 5173 permanently in
+# Projects created by older Timonel versions publish 5173 permanently in
 # docker-compose.yml. Don't add it a second time for those.
 ALREADY_PUBLISHED=$(awk -v svc="  $SAFE_URL:" -v port="$VITE_PORT:$VITE_PORT" '
     { line = $0; sub(/[ \t\r]+$/, "", line) }
@@ -78,7 +78,7 @@ cleanup() {
         echo -e "${BLUE}🧹 Cleaning up: recreating container without port $VITE_PORT...${NC}"
         # Same config minus the override -> Compose recreates the container
         docker-compose --profile projects up -d "$SAFE_URL" || \
-            echo -e "${YELLOW}⚠️  Could not recreate container; run: dockerator start $SAFE_URL${NC}"
+            echo -e "${YELLOW}⚠️  Could not recreate container; run: timonel start $SAFE_URL${NC}"
         rm -rf "$OVERRIDE_DIR"
     fi
     echo -e "${GREEN}✅ Development mode ended${NC}"

@@ -3,11 +3,11 @@
 # Shared project-name helpers. Source this file, don't run it:
 #   source scripts/lib/project.sh
 # Functions read docker-compose.yml from the current directory, so callers
-# must run from the dockerator root (the `dockerator` dispatcher cd's there).
+# must run from the timonel root (the `timonel` dispatcher cd's there).
 
-# Names Dockerator itself uses in docker-compose.yml (core services and the
+# Names Timonel itself uses in docker-compose.yml (core services and the
 # network key). A project with one of these names would collide with them.
-DOCKERATOR_RESERVED_NAMES="traefik mysql adminer mailpit dockerator"
+TIMONEL_RESERVED_NAMES="traefik mysql adminer mailpit timonel"
 
 # Lowercase, '_' -> '-': the form used for compose service keys, container
 # names and hostnames.
@@ -24,7 +24,7 @@ is_valid_project_name() {
 is_reserved_project_name() {
     local safe reserved
     safe=$(to_safe_name "$1")
-    for reserved in $DOCKERATOR_RESERVED_NAMES; do
+    for reserved in $TIMONEL_RESERVED_NAMES; do
         [ "$safe" = "$reserved" ] && return 0
     done
     return 1

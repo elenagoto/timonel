@@ -34,7 +34,7 @@ if ! project_service_exists "$SAFE_NAME"; then
 fi
 
 # Start the container if it isn't running
-if ! docker ps --format '{{.Names}}' | grep -qx "dockerator_$SAFE_NAME"; then
+if ! docker ps --format '{{.Names}}' | grep -qx "timonel_$SAFE_NAME"; then
     echo -e "${YELLOW}⚠️  Container not running. Starting...${NC}"
     docker-compose --profile projects up -d "$SAFE_NAME"
     sleep 2
@@ -45,7 +45,7 @@ echo ""
 echo "📦 Installing new packages (the dev server keeps running):"
 echo "  npm install <package>   - Install package (package.json updates on your machine too)"
 echo "  If the app doesn't pick it up: exit, then"
-echo "    dockerator stop $SAFE_NAME && dockerator start $SAFE_NAME"
+echo "    timonel stop $SAFE_NAME && timonel start $SAFE_NAME"
 echo "  ⚠️  Don't kill the dev server: it is the container's main process,"
 echo "     so the container (and this shell) would stop with it."
 echo ""

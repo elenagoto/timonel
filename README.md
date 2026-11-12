@@ -1,4 +1,4 @@
-# Dockerator 🐳
+# Timonel 🐳
 
 > A Docker orchestration CLI tool for running many local projects side by side (Next.js, Vite, Parcel, WordPress, Laravel) with automatic routing and zero configuration. Create new projects, or drop in ones you downloaded.
 
@@ -10,9 +10,9 @@ Inspired by devner by [MarJC5](https://github.com/MarJC5).
 
 ## ✨ Features
 
-- 🚀 **One-command project creation** - `dockerator new nextjs|vite|parcel|wp|laravel <name>`, Laravel with optional starter kits (`--kit react|vue|svelte|livewire`)
-- 📥 **Bring your own project** - `dockerator add <name>` dockerizes a downloaded project (course repo, client site) without touching its code
-- 🧑‍💻 **One dev command** - `dockerator dev <name>` opens a shell in any project, with hints for its framework
+- 🚀 **One-command project creation** - `timonel new nextjs|vite|parcel|wp|laravel <name>`, Laravel with optional starter kits (`--kit react|vue|svelte|livewire`)
+- 📥 **Bring your own project** - `timonel add <name>` dockerizes a downloaded project (course repo, client site) without touching its code
+- 🧑‍💻 **One dev command** - `timonel dev <name>` opens a shell in any project, with hints for its framework
 - 📘 **TypeScript by default** - New Next.js projects scaffold as TypeScript (strict mode) with ESLint, not JavaScript
 - 🧱 **Two shared images** - one Node 24 image for every JavaScript project, one PHP 8.4 (FrankenPHP) image for WordPress and Laravel
 - 🐳 **Only Docker needed** - no Node.js, npm, PHP or Composer on your machine; even the scaffolders run in containers
@@ -45,14 +45,14 @@ docker --version
 ```bash
 # 1. Clone and install
 git clone https://github.com/elenagoto/dockerator.git
-cd dockerator
+cd timonel
 bash install.sh
 
 # 2. Start base services
-dockerator up
+timonel up
 
 # 3. Sync hosts file
-dockerator hosts
+timonel hosts
 ```
 
 ---
@@ -60,10 +60,10 @@ dockerator hosts
 ## 🌐 Access Services
 
 - 🎛️ **Traefik Dashboard**: http://localhost:8080
-- 🗄️ **Adminer** (Database): http://dockerator-adminer.localhost
-  - Server: `mysql` | User: `root` | Pass: `dockerator`
-- 📧 **Mailpit** (Email Testing): http://dockerator-mailpit.localhost
-  - WordPress projects send all their mail here automatically (via a small `dockerator-mailpit.php` must-use plugin), and so do Laravel projects (`MAIL_HOST=mailpit` in their `.env`)
+- 🗄️ **Adminer** (Database): http://timonel-adminer.localhost
+  - Server: `mysql` | User: `root` | Pass: `timonel`
+- 📧 **Mailpit** (Email Testing): http://timonel-mailpit.localhost
+  - WordPress projects send all their mail here automatically (via a small `timonel-mailpit.php` must-use plugin), and so do Laravel projects (`MAIL_HOST=mailpit` in their `.env`)
   - Other apps: SMTP host `mailpit`, port `1025`, no auth/TLS
 
 ---
@@ -77,7 +77,7 @@ Every project runs on one of two shared setups. The framework only decides a few
 | **node** | Next.js, Vite, Parcel | `node:24-alpine` (`scripts/templates/stacks/node/`) | Next.js 3000, Vite 5173, Parcel 1234 |
 | **php** | WordPress, Laravel | FrankenPHP 1.x, PHP 8.4, Composer, Node 24 (`scripts/templates/stacks/php/`) | 80 (+ 5173 for Vite while `dev` is open) |
 
-Each project's block in `docker-compose.yml` is labelled with its stack and framework (`dockerator.stack`, `dockerator.framework`), which `list`, `dev` and `restart` read.
+Each project's block in `docker-compose.yml` is labelled with its stack and framework (`timonel.stack`, `timonel.framework`), which `list`, `dev` and `restart` read.
 
 ---
 
@@ -87,22 +87,22 @@ Three commands cover a project's life:
 
 | You want to… | Command | |
 | --- | --- | --- |
-| Start a **new** project from a template | `dockerator new <type> <name>` | [Creating Projects](#creating-projects) |
-| Run a project you **already have** in `apps/<name>` | `dockerator add <name>` | [Bringing In Existing Projects](#-bringing-in-existing-projects) |
-| Work inside a project (install packages, run tools) | `dockerator dev <name>` | [Dev Mode](#-dev-mode) |
+| Start a **new** project from a template | `timonel new <type> <name>` | [Creating Projects](#creating-projects) |
+| Run a project you **already have** in `apps/<name>` | `timonel add <name>` | [Bringing In Existing Projects](#-bringing-in-existing-projects) |
+| Work inside a project (install packages, run tools) | `timonel dev <name>` | [Dev Mode](#-dev-mode) |
 
 ### Creating Projects
 
-> **Project names** may contain letters, digits, `-` and `_`, and must start with a letter or digit (e.g. `my-app`, `my_app`, `MyApp`). The names `traefik`, `mysql`, `adminer`, `mailpit` and `dockerator` are reserved.
+> **Project names** may contain letters, digits, `-` and `_`, and must start with a letter or digit (e.g. `my-app`, `my_app`, `MyApp`). The names `traefik`, `mysql`, `adminer`, `mailpit` and `timonel` are reserved.
 >
-> The folder keeps the name exactly as you typed it (`apps/my_app`), while the URL and container use a lowercase, hyphenated form (`my-app.localhost`). Every command accepts either form: `dockerator open my_app` and `dockerator open my-app` both work.
+> The folder keeps the name exactly as you typed it (`apps/my_app`), while the URL and container use a lowercase, hyphenated form (`my-app.localhost`). Every command accepts either form: `timonel open my_app` and `timonel open my-app` both work.
 
 #### Next.js Project
 
 ```bash
-dockerator new nextjs my-app
-dockerator hosts
-dockerator start my-app
+timonel new nextjs my-app
+timonel hosts
+timonel start my-app
 # Visit: http://my-app.localhost
 ```
 
@@ -111,9 +111,9 @@ Scaffolds a **TypeScript** Next.js app (strict mode) — `src/app/page.tsx`, `sr
 **With MySQL connected:**
 
 ```bash
-dockerator new nextjs my-app --with-db
-dockerator hosts
-dockerator start my-app
+timonel new nextjs my-app --with-db
+timonel hosts
+timonel start my-app
 # Visit: http://my-app.localhost
 ```
 
@@ -127,25 +127,25 @@ This creates the `my_app` database and user in the shared MySQL service (startin
 
 Without the flag, the project starts with no database connection — useful for pure frontend practice. `--with-db` works the same way for `vite` and `parcel` projects.
 
-> **Using an existing/downloaded project instead of scaffolding a new one?** Use `dockerator add` — see [Bringing In Existing Projects](#-bringing-in-existing-projects) below. It never forces TypeScript (or anything else) onto the project.
+> **Using an existing/downloaded project instead of scaffolding a new one?** Use `timonel add` — see [Bringing In Existing Projects](#-bringing-in-existing-projects) below. It never forces TypeScript (or anything else) onto the project.
 
 #### WordPress Project
 
 ```bash
-dockerator new wp my-site
-dockerator hosts
-dockerator start my-site
+timonel new wp my-site
+timonel hosts
+timonel start my-site
 # Visit: http://my-site.localhost
 ```
 
-Downloads WordPress, creates the `my_site` database and user (starting MySQL first if needed), generates `wp-config.php`, and sets up an empty theme folder at `wp-content/themes/my-site/`. Re-running `dockerator new wp my-site` on an existing site is safe: it only adds what's missing and never touches your theme.
+Downloads WordPress, creates the `my_site` database and user (starting MySQL first if needed), generates `wp-config.php`, and sets up an empty theme folder at `wp-content/themes/my-site/`. Re-running `timonel new wp my-site` on an existing site is safe: it only adds what's missing and never touches your theme.
 
 #### Vite + React Project
 
 ```bash
-dockerator new vite my-vite
-dockerator hosts
-dockerator start my-vite
+timonel new vite my-vite
+timonel hosts
+timonel start my-vite
 # Visit: http://my-vite.localhost
 ```
 
@@ -154,9 +154,9 @@ Creates a **TypeScript** React app with Vite's official scaffolder (`react-ts` t
 #### Parcel + React Project
 
 ```bash
-dockerator new parcel my-parcel
-dockerator hosts
-dockerator start my-parcel
+timonel new parcel my-parcel
+timonel hosts
+timonel start my-parcel
 # Visit: http://my-parcel.localhost
 ```
 
@@ -165,16 +165,16 @@ A small **JavaScript** React starter built with Parcel: `public/index.html`, `sr
 #### Laravel Project
 
 ```bash
-dockerator new laravel my-api                 # plain Laravel (Blade + Vite)
-dockerator new laravel my-app --kit react     # or vue, svelte, livewire
-dockerator start my-api
+timonel new laravel my-api                 # plain Laravel (Blade + Vite)
+timonel new laravel my-app --kit react     # or vue, svelte, livewire
+timonel start my-api
 # Visit: http://my-api.localhost
 ```
 
-Creates the project with Composer inside a temporary container (no PHP or Composer needed on your machine). With `--kit`, you get one of Laravel's official starter kits (login, registration and a dashboard already built), from their current main branch, as Laravel's own installer does. Then Dockerator:
+Creates the project with Composer inside a temporary container (no PHP or Composer needed on your machine). With `--kit`, you get one of Laravel's official starter kits (login, registration and a dashboard already built), from their current main branch, as Laravel's own installer does. Then Timonel:
 
 - writes `.env` for the shared services: **MySQL** (database `my_api`, instead of Laravel's SQLite default), **Mailpit** for mail, and `APP_URL=http://my-api.localhost`
-- sets `QUEUE_CONNECTION=sync`, so queued jobs (like queued emails) run immediately: no queue worker runs locally, and with Laravel's default (`database`) they would wait in the `jobs` table forever. To test real background queues, set it back to `database` and run `php artisan queue:work` inside `dockerator dev`
+- sets `QUEUE_CONNECTION=sync`, so queued jobs (like queued emails) run immediately: no queue worker runs locally, and with Laravel's default (`database`) they would wait in the `jobs` table forever. To test real background queues, set it back to `database` and run `php artisan queue:work` inside `timonel dev`
 - sets up `vite.config` so Vite's dev server works inside Docker (hot reload on `localhost:5173`)
 - creates the database, generates the app key, runs the migrations, and builds the front-end assets
 
@@ -185,8 +185,8 @@ Creates the project with Composer inside a temporary container (no PHP or Compos
 Downloaded a project (e.g. a course repo or a client site)? Put it in `apps/<name>` and run:
 
 ```bash
-dockerator add my-course-app            # Node projects: add --with-db for a database
-dockerator start my-course-app
+timonel add my-course-app            # Node projects: add --with-db for a database
+timonel start my-course-app
 # Visit: http://my-course-app.localhost
 ```
 
@@ -196,19 +196,19 @@ dockerator start my-course-app
 - Your `package.json`, TypeScript-or-not setup, and source files stay exactly as downloaded.
 - WordPress: a database is created; if `wp-config.php` doesn't point at the shared MySQL server, `add` tells you which settings to use (it doesn't edit the file).
 
-`dockerator add` is also safe on a project that's already set up: it skips the question and fills in anything missing (for example a database). `dockerator new` is only for **fresh** projects: if `apps/<name>` already exists, it stops and points you to `add`.
+`timonel add` is also safe on a project that's already set up: it skips the question and fills in anything missing (for example a database). `timonel new` is only for **fresh** projects: if `apps/<name>` already exists, it stops and points you to `add`.
 
 ---
 
 ### 💻 Dev Mode
 
-One command for every project: `dockerator dev <name>` opens a shell inside the project's container, with hints for its framework. It recognises the framework by itself.
+One command for every project: `timonel dev <name>` opens a shell inside the project's container, with hints for its framework. It recognises the framework by itself.
 
 #### WordPress (with Vite)
 
 ```bash
 # Enter dev mode (also publishes port 5173 for Vite HMR)
-dockerator dev my-site
+timonel dev my-site
 
 # Inside container (you start in the theme folder):
   npm install    - Install theme dependencies
@@ -226,7 +226,7 @@ Port 5173 is only published while dev mode is open, so several WordPress (and La
 
 ```bash
 # Enter dev mode (also publishes port 5173 for Vite HMR)
-dockerator dev my-api
+timonel dev my-api
 
 # Inside container (you start in /app):
   php artisan <command>  - Artisan (migrate, make:model, tinker...)
@@ -243,13 +243,13 @@ The page keeps working without `npm run dev` (it uses the built assets); while i
 
 ```bash
 # Enter dev mode (starts the container if needed)
-dockerator dev my-app
+timonel dev my-app
 
 # Inside container (you start in /app):
 📦 Installing new packages (the dev server keeps running):
   npm install <package>  - Install package
   # If the app doesn't pick it up: exit, then
-  # dockerator stop my-app && dockerator start my-app
+  # timonel stop my-app && timonel start my-app
   # Don't kill the dev server: it's the container's main process,
   # so the container would stop with it.
 
@@ -267,32 +267,32 @@ dockerator dev my-app
 ### 🛠️ Managing Projects
 
 ```bash
-dockerator up              # Start the shared services (Traefik, MySQL, Adminer, Mailpit)
-dockerator down            # Stop everything, projects included
-dockerator list            # List all projects with type and status
-dockerator open <name>     # Open project in VS Code
-dockerator start <name>    # Start project
-dockerator stop <name>     # Stop project
-dockerator restart <name>  # Restart and reinstall dependencies (Node: fresh node_modules; Laravel: composer + npm install)
-dockerator logs [name]     # Follow logs (one project, or everything)
-dockerator remove <name>   # Remove project completely (container, its volumes and image, folder; asks before deleting its database)
-dockerator hosts           # Sync /etc/hosts
+timonel up              # Start the shared services (Traefik, MySQL, Adminer, Mailpit)
+timonel down            # Stop everything, projects included
+timonel list            # List all projects with type and status
+timonel open <name>     # Open project in VS Code
+timonel start <name>    # Start project
+timonel stop <name>     # Stop project
+timonel restart <name>  # Restart and reinstall dependencies (Node: fresh node_modules; Laravel: composer + npm install)
+timonel logs [name]     # Follow logs (one project, or everything)
+timonel remove <name>   # Remove project completely (container, its volumes and image, folder; asks before deleting its database)
+timonel hosts           # Sync /etc/hosts
 ```
 
-Projects don't start with `dockerator up`; start each one with `dockerator start <name>` (or `dev`, which starts it if needed). Every command accepts the folder name or the URL form of a project (`my_app` or `my-app`), and rejects options it doesn't know instead of ignoring them.
+Projects don't start with `timonel up`; start each one with `timonel start <name>` (or `dev`, which starts it if needed). Every command accepts the folder name or the URL form of a project (`my_app` or `my-app`), and rejects options it doesn't know instead of ignoring them.
 
 ---
 
 ## 📂 Project Structure
 
 ```
-dockerator/
-├── dockerator                      # Main CLI script
+timonel/
+├── timonel                      # Main CLI script
 ├── install.sh                      # Installation script
 ├── docker-compose.yml              # Active config (git-ignored)
 ├── docker-compose.yml.example      # Template
-├── dockerator-completion.bash      # Bash autocomplete
-├── dockerator-completion.zsh       # Zsh autocomplete
+├── timonel-completion.bash      # Bash autocomplete
+├── timonel-completion.zsh       # Zsh autocomplete
 ├── scripts/
 │   ├── templates/                  # Project templates
 │   │   ├── stacks/
@@ -302,7 +302,7 @@ dockerator/
 │   │   ├── parcel/                 # Parcel + React starter files
 │   │   ├── vite/                   # (scaffolded by Vite's own tool)
 │   │   └── wordpress/
-│   │       ├── dockerator-mailpit.php  # Must-use plugin: WordPress mail -> Mailpit
+│   │       ├── timonel-mailpit.php  # Must-use plugin: WordPress mail -> Mailpit
 │   │       └── wp-config.php.template
 │   ├── lib/
 │   │   ├── compose.sh              # Read/edit docker-compose.yml (insert, list projects, labels)
@@ -357,9 +357,9 @@ Database wiring is **opt-in** via the `--with-db` flag on `new` or `add` — not
 - **Password**: `project_name`
 - **Host**: `mysql`
 
-Access all databases via Adminer: http://dockerator-adminer.localhost
+Access all databases via Adminer: http://timonel-adminer.localhost
 
-`dockerator remove` asks whether to delete a project's database too; pressing Enter keeps it.
+`timonel remove` asks whether to delete a project's database too; pressing Enter keeps it.
 
 ---
 
@@ -382,7 +382,7 @@ docker-compose down
 docker-compose ps
 
 # 2. Sync hosts file
-dockerator hosts
+timonel hosts
 
 # 3. Check Traefik dashboard
 open http://localhost:8080
@@ -395,14 +395,14 @@ open http://localhost:8080
 docker-compose ps
 
 # Check MySQL logs
-dockerator logs mysql
+timonel logs mysql
 ```
 
-If the database itself is missing, for example because the site was created while MySQL was stopped with an older Dockerator version, run `add` on the project. It's safe on a project that's already set up and only creates what's missing:
+If the database itself is missing, for example because the site was created while MySQL was stopped with an older Timonel version, run `add` on the project. It's safe on a project that's already set up and only creates what's missing:
 
 ```bash
-dockerator add my-site                # WordPress or Laravel
-dockerator add my-app --with-db       # Node project with a database
+timonel add my-site                # WordPress or Laravel
+timonel add my-app --with-db       # Node project with a database
 ```
 
 For a Laravel project brought in with its own `.env`, check that `.env` uses `DB_HOST=mysql` and the database name above; `add` prints the exact values when it doesn't.
@@ -411,13 +411,13 @@ For a Laravel project brought in with its own `.env`, check that `.env` uses `DB
 
 Only one WordPress or Laravel project can be in dev mode at a time, because Vite HMR needs port 5173. Exit the other dev-mode shell first.
 
-WordPress projects created with older Dockerator versions publish 5173 **permanently** (a `ports: - "5173:5173"` entry in their `docker-compose.yml` block). This blocks other projects from using the port even outside dev mode. Delete those two lines from that project's block; `dockerator dev` now publishes the port only while dev mode is open.
+WordPress projects created with older Timonel versions publish 5173 **permanently** (a `ports: - "5173:5173"` entry in their `docker-compose.yml` block). This blocks other projects from using the port even outside dev mode. Delete those two lines from that project's block; `timonel dev` now publishes the port only while dev mode is open.
 
 ### Next.js Project Has No DB Env Vars
 
 If a Next.js project was created **before** the `--with-db` flag existed, it won't have `DB_*` environment variables or a MySQL dependency — that's expected, not a bug. Two options:
 
-1. Remove the project and recreate it with `dockerator new nextjs <name> --with-db`
+1. Remove the project and recreate it with `timonel new nextjs <name> --with-db`
 2. Manually add the `environment` and `depends_on` blocks to that project's service entry in `docker-compose.yml`. For the exact shape, look at the block `scripts/add-to-compose.sh` writes with `--with-db` (the `DB_*` variables and `depends_on: mysql: condition: service_healthy`).
 
 ### Next.js Project Isn't TypeScript
@@ -425,7 +425,7 @@ If a Next.js project was created **before** the `--with-db` flag existed, it won
 Two possible reasons, both expected:
 
 1. **Created before TypeScript became the default** — same situation as the DB flag above. Recreate it, or manually add `tsconfig.json` + convert files yourself.
-2. **Brought in with `dockerator add`** (e.g. a course repo) — Dockerator intentionally does not force TypeScript onto projects it didn't create from scratch. See [Bringing In Existing Projects](#-bringing-in-existing-projects).
+2. **Brought in with `timonel add`** (e.g. a course repo) — Timonel intentionally does not force TypeScript onto projects it didn't create from scratch. See [Bringing In Existing Projects](#-bringing-in-existing-projects).
 
 ### Permission Denied Removing Files
 
@@ -447,8 +447,8 @@ docker run --rm -v "$(pwd)":/data alpine rm -rf /data/apps/project-name
 ### ❌ Forgetting to sync hosts
 
 ```bash
-dockerator new nextjs my-app
-dockerator hosts  # ← Don't forget this!
+timonel new nextjs my-app
+timonel hosts  # ← Don't forget this!
 ```
 
 ### ❌ Editing docker-compose.yml directly
@@ -466,15 +466,15 @@ cp docker-compose.yml.example docker-compose.yml
 
 ```bash
 # Wrong:
-dockerator new nextjs course-app   # ❌ stops: apps/course-app already exists
+timonel new nextjs course-app   # ❌ stops: apps/course-app already exists
 
 # Right:
-dockerator add course-app          # ✅ detects the framework, keeps your code as is
+timonel add course-app          # ✅ detects the framework, keeps your code as is
 ```
 
 ### ❌ Not waiting for MySQL on the very first start
 
-The first `dockerator up` downloads and initialises MySQL, which takes ~30 seconds. Projects that need it wait for it automatically; Adminer may show a connection error until then.
+The first `timonel up` downloads and initialises MySQL, which takes ~30 seconds. Projects that need it wait for it automatically; Adminer may show a connection error until then.
 
 ---
 

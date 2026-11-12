@@ -68,15 +68,15 @@ SERVICE_FILE=$(mktemp)
     echo "    build:"
     echo "      context: ./apps/$APP_NAME"
     echo "      dockerfile: Dockerfile"
-    echo "    container_name: dockerator_$SAFE_NAME"
+    echo "    container_name: timonel_$SAFE_NAME"
     echo "    profiles:"
     echo "      - projects"
     echo "    labels:"
     echo "      - \"traefik.enable=true\""
     echo "      - \"traefik.http.routers.$SAFE_NAME.rule=Host(\`$SAFE_NAME.localhost\`)\""
     echo "      - \"traefik.http.services.$SAFE_NAME.loadbalancer.server.port=$PORT\""
-    echo "      - \"dockerator.stack=$STACK\""
-    echo "      - \"dockerator.framework=$FRAMEWORK\""
+    echo "      - \"timonel.stack=$STACK\""
+    echo "      - \"timonel.framework=$FRAMEWORK\""
 
     if [ -n "$DEV_ARGS" ]; then
         # e.g. command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
@@ -95,7 +95,7 @@ SERVICE_FILE=$(mktemp)
         echo "      - ./apps/$APP_NAME/Caddyfile:/etc/caddy/Caddyfile"
     fi
 
-    # No fixed ports for php: `dockerator dev` publishes 5173 (Vite HMR)
+    # No fixed ports for php: `timonel dev` publishes 5173 (Vite HMR)
     # only while dev mode is open, so several projects can run side by side
 
     if [ -n "$WEB_ROOT" ] || [ "$WITH_DB" = "--with-db" ]; then
@@ -112,7 +112,7 @@ SERVICE_FILE=$(mktemp)
     fi
 
     echo "    networks:"
-    echo "      - dockerator"
+    echo "      - timonel"
 
     if [ "$WITH_DB" = "--with-db" ]; then
         echo "    depends_on:"

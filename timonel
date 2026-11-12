@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Dockerator - Multi-project Docker orchestration
+# Timonel - Multi-project Docker orchestration
 # Similar to devner but for learning Docker concepts
 
 # Auto-fix script permissions if needed
@@ -46,7 +46,7 @@ NC='\033[0m' # No Color
 show_header() {
     echo -e "${BLUE}"
     echo "╔════════════════════════════════════════╗"
-    echo "║          DOCKERATOR                    ║"
+    echo "║          TIMONEL                       ║"
     echo "║   Docker Multi-Project Manager         ║"
     echo "╚════════════════════════════════════════╝"
     echo -e "${NC}"
@@ -99,7 +99,7 @@ if [ -n "$NAME_ARG" ]; then
     fi
     # Creating, adding or removing a core service name would clobber shared services
     if { [ "$COMMAND" = "new" ] || [ "$COMMAND" = "add" ] || [ "$COMMAND" = "remove" ]; } && is_reserved_project_name "$NAME_ARG"; then
-        echo -e "${RED}❌ '$NAME_ARG' is reserved by Dockerator (${DOCKERATOR_RESERVED_NAMES// /, })${NC}"
+        echo -e "${RED}❌ '$NAME_ARG' is reserved by Timonel (${TIMONEL_RESERVED_NAMES// /, })${NC}"
         exit 1
     fi
 fi
@@ -119,7 +119,7 @@ fi
 
 case $COMMAND in
     new)
-        NEW_USAGE="dockerator new <type> <name> [--with-db] | dockerator new laravel <name> [--kit react|vue|svelte|livewire]"
+        NEW_USAGE="timonel new <type> <name> [--with-db] | timonel new laravel <name> [--kit react|vue|svelte|livewire]"
         if [ $# -lt 3 ]; then
             echo -e "${RED}Usage: $NEW_USAGE${NC}"
             echo "  Types: nextjs, vite, parcel, wp, laravel"
@@ -162,12 +162,12 @@ case $COMMAND in
         # `new` only creates fresh projects; existing ones go through `add`
         if [ -d "apps/$PROJECT_NAME" ]; then
             echo -e "${RED}❌ apps/$PROJECT_NAME already exists${NC}"
-            echo "   To dockerize an existing project, use: dockerator add $PROJECT_NAME"
+            echo "   To dockerize an existing project, use: timonel add $PROJECT_NAME"
             exit 1
         fi
         if project_service_exists "$(to_safe_name "$PROJECT_NAME")"; then
             echo -e "${RED}❌ A project called '$(to_safe_name "$PROJECT_NAME")' is already in docker-compose.yml${NC}"
-            echo "   Pick another name, or remove it first: dockerator remove $(to_safe_name "$PROJECT_NAME")"
+            echo "   Pick another name, or remove it first: timonel remove $(to_safe_name "$PROJECT_NAME")"
             exit 1
         fi
 
@@ -202,13 +202,13 @@ case $COMMAND in
         ;;
     add)
         if [ -z "$2" ]; then
-            echo -e "${RED}Usage: dockerator add <name> [--with-db]${NC}"
+            echo -e "${RED}Usage: timonel add <name> [--with-db]${NC}"
             echo "  Dockerizes an existing project in apps/<name>"
             exit 1
         fi
         if [ $# -gt 3 ] || { [ -n "${3-}" ] && [ "$3" != "--with-db" ]; }; then
             echo -e "${RED}Unknown option: ${*:3}${NC}"
-            echo "  Usage: dockerator add <name> [--with-db]"
+            echo "  Usage: timonel add <name> [--with-db]"
             exit 1
         fi
 
@@ -216,7 +216,7 @@ case $COMMAND in
         ;;
     remove)
         if [ -z "$2" ]; then
-            echo -e "${RED}Usage: dockerator remove <name>${NC}"
+            echo -e "${RED}Usage: timonel remove <name>${NC}"
             exit 1
         fi
         
@@ -225,7 +225,7 @@ case $COMMAND in
         ;;
     open)
         if [ -z "$2" ]; then
-            echo -e "${RED}Usage: dockerator open <project-name>${NC}"
+            echo -e "${RED}Usage: timonel open <project-name>${NC}"
             exit 1
         fi
         
@@ -234,7 +234,7 @@ case $COMMAND in
         ;;
     dev)
         if [ -z "$2" ]; then
-            echo -e "${RED}Usage: dockerator dev <project-name>${NC}"
+            echo -e "${RED}Usage: timonel dev <project-name>${NC}"
             exit 1
         fi
 
@@ -252,7 +252,7 @@ case $COMMAND in
         ;;
     start)
         if [ -z "$2" ]; then
-            echo -e "${RED}Usage: dockerator start <project-name>${NC}"
+            echo -e "${RED}Usage: timonel start <project-name>${NC}"
             exit 1
         fi
         
@@ -262,7 +262,7 @@ case $COMMAND in
     
     stop)
         if [ -z "$2" ]; then
-            echo -e "${RED}Usage: dockerator stop <project-name>${NC}"
+            echo -e "${RED}Usage: timonel stop <project-name>${NC}"
             exit 1
         fi
         
@@ -271,7 +271,7 @@ case $COMMAND in
         ;;
     restart)
         if [ -z "$2" ]; then
-            echo -e "${RED}Usage: dockerator restart <project-name>${NC}"
+            echo -e "${RED}Usage: timonel restart <project-name>${NC}"
             exit 1
         fi
         

@@ -4,20 +4,20 @@
 # Source this file, don't run it:
 #   source scripts/lib/compose.sh
 # Paths default to docker-compose.yml in the current directory (the
-# `dockerator` dispatcher cd's to the repo root before running scripts).
+# `timonel` dispatcher cd's to the repo root before running scripts).
 
 # Shared services defined by docker-compose.yml.example (not projects)
-DOCKERATOR_CORE_SERVICES="traefik mysql adminer mailpit"
+TIMONEL_CORE_SERVICES="traefik mysql adminer mailpit"
 
 # Print the name of every project service, one per line.
 # Only reads keys directly under the top-level `services:` section, so
-# entries under `volumes:` or `networks:` (e.g. the `dockerator` network)
+# entries under `volumes:` or `networks:` (e.g. the `timonel` network)
 # are never mistaken for projects. Core services are matched exactly, so a
 # project with "mysql" inside its name is still listed.
 list_project_services() {
     local file="${1:-docker-compose.yml}"
     [ -f "$file" ] || return 0
-    awk -v core=" $DOCKERATOR_CORE_SERVICES " '
+    awk -v core=" $TIMONEL_CORE_SERVICES " '
         # A top-level key (column 0, not a comment) starts a new section
         /^[^ \t#]/ { in_services = ($0 ~ /^services:[ \t\r]*$/); next }
         in_services && /^  [A-Za-z0-9_.-]+:[ \t\r]*$/ {
@@ -48,7 +48,7 @@ project_service_exists() {
 }
 
 # Print the value of label <key> on <service>, e.g.
-#   service_label my-app dockerator.framework   ->  next
+#   service_label my-app timonel.framework   ->  next
 # Prints nothing if the service or label doesn't exist.
 service_label() {
     local service="$1" key="$2" file="${3:-docker-compose.yml}"

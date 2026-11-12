@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# List all Dockerator projects
+# List all Timonel projects
 # Usage: ./list-projects.sh
 
 set -e
@@ -18,7 +18,7 @@ MAGENTA='\033[0;35m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-echo -e "${BLUE}📋 Dockerator Projects${NC}"
+echo -e "${BLUE}📋 Timonel Projects${NC}"
 echo ""
 
 # Get running services (matched exactly per project below, so core
@@ -32,8 +32,8 @@ if [ -z "$ALL_SERVICES" ]; then
     echo -e "${YELLOW}No projects found${NC}"
     echo ""
     echo "Create one with:"
-    echo "  dockerator new nextjs <name>"
-    echo "  dockerator new wp <name>"
+    echo "  timonel new nextjs <name>"
+    echo "  timonel new wp <name>"
     exit 0
 fi
 
@@ -93,9 +93,9 @@ done
 
 echo ""
 echo "Commands:"
-echo "  dockerator start <project>             - Start a specific project"
-echo "  dockerator stop <project>              - Stop a specific project"
-echo "  dockerator dev <project>               - Open a dev shell in the project"
-echo "  dockerator logs <project>              - View project logs"
-echo "  dockerator open <project>              - Open in VS Code"
+echo "  timonel start <project>             - Start a specific project"
+echo "  timonel stop <project>              - Stop a specific project"
+echo "  timonel dev <project>               - Open a dev shell in the project"
+echo "  timonel logs <project>              - View project logs"
+echo "  timonel open <project>              - Open in VS Code"
 echo ""

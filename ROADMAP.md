@@ -136,13 +136,17 @@ timonel history [--errors]                # command log (phase 4)
 
 ## Phase 3: Rename to timonel and fresh setup
 
-- [ ] Rename the dispatcher, completion files and functions, `~/.dockerator-path`, container prefix `timonel_`, network, `timonel-adminer.localhost` / `timonel-mailpit.localhost`, `/etc/hosts` markers, MySQL root password, reserved names, Traefik router names
-- [ ] Set an explicit compose project name (`name: timonel`) so volume names no longer depend on the folder name
+- [x] Rename the dispatcher, completion files and functions, `~/.dockerator-path`, container prefix `timonel_`, network, `timonel-adminer.localhost` / `timonel-mailpit.localhost`, `/etc/hosts` markers, MySQL root password, reserved names, Traefik router names — done with one case-preserving replacement (dockerator→timonel, Dockerator→Timonel, DOCKERATOR_→TIMONEL_) plus `git mv` of `timonel`, `timonel-completion.{bash,zsh}`, `timonel-mailpit.php`. GitHub URLs keep the old name until the repo is renamed.
+- [x] Set an explicit compose project name (`name: timonel`) so volume names no longer depend on the folder name
 - [ ] Switch `docker-compose` → `docker compose` everywhere *(audit)*
 - [ ] Expose MySQL 3306, Traefik dashboard 8080 and Mailpit 1025 on `127.0.0.1` only *(audit: currently open to the LAN)*
 - [ ] Dispatcher cleanup *(audit)*: remove the `DEBUG:` echoes in `hosts`; move the `chmod` self-fix after symlink resolution (or drop it); regenerate the help text from the real command list
 - [ ] `install.sh` *(audit)*: quote `$(pwd)`; work from any directory; add the zsh completion folder to `fpath`; remove the old `dockerator` symlink and completion if present
-- [ ] **Fresh start** (confirm the exact list before deleting): old project containers and images, `apps/*`, `dockerator_mysql_data` volume, `dockerator` network, old `/etc/hosts` block. *Leave `devner_mysql_data` alone: it belongs to another tool.*
+- [x] **Fresh start** (done 2026-11-12, before the rename, as you chose):
+  - Backups in `~/dockerator-backup-2026-11-12/`: `apps.tar.gz` (all 11 projects incl. their `.git`, without `node_modules`/`.next`/`.parcel-cache`, plus the old `docker-compose.yml`; verified file for file) and `mysql-databases.sql` (`portfolio`, `test_wp`; verified by restoring into a throwaway MySQL: 27 tables, 610 rows, all counts identical)
+  - Deleted: the 11 `apps/` folders, images `dockerator-next-routing-exercises` + `dockerator-rust-removal`, volume `dockerator_mysql_data`; `docker-compose.yml` reset from the template. No containers or network existed. `devner_*` volumes left alone.
+  - [ ] You: remove the old `/etc/hosts` block (`sudo sed -i '' '/# Dockerator managed hosts/,/# End Dockerator managed hosts/d' /etc/hosts`)
+  - [ ] Old install leftovers (`/usr/local/bin/dockerator`, `~/.dockerator-path`, `~/.zsh/completion/_dockerator`): removed by the new `install.sh` when Timonel is installed
 - [ ] Rename the local folder and the GitHub repo (you), then update the clone URL in the README
   - **Rename** `elenagoto/dockerator` → `timonel` in GitHub's repo settings. GitHub then redirects the old URL (web pages and `git clone/pull/push`) to the new one, so the link already sent on CVs keeps working.
   - **Never create a new repo named `dockerator`** on the account: GitHub drops the redirect when the old name is reused, and CV visitors would land on that repo instead.

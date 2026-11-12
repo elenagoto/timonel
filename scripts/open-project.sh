@@ -19,15 +19,15 @@ if [ -z "$PROJECT_NAME" ]; then
     exit 1
 fi
 
-# Get the directory where dockerator is installed (resolve symlink)
+# Get the directory where timonel is installed (resolve symlink)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-DOCKERATOR_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
-cd "$DOCKERATOR_DIR"
+TIMONEL_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
+cd "$TIMONEL_DIR"
 source scripts/lib/project.sh
 
 # Accept the folder name or the service name (my_app / my-app)
 APP_DIR_NAME=$(resolve_app_dir_name "$PROJECT_NAME")
-APP_DIR="$DOCKERATOR_DIR/apps/$APP_DIR_NAME"
+APP_DIR="$TIMONEL_DIR/apps/$APP_DIR_NAME"
 
 # Check if project exists
 if [ ! -d "$APP_DIR" ]; then

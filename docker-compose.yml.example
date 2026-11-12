@@ -1,6 +1,10 @@
-# Dockerator - Docker Compose Template
+# Timonel - Docker Compose Template
 # Copy this to docker-compose.yml to start fresh
 # The actual docker-compose.yml is modified by scripts and git-ignored
+
+# Compose project name: fixes the names of volumes and built images
+# (timonel_mysql_data, timonel-<project>) whatever this folder is called
+name: timonel
 
 services:
   # =================================================================
@@ -8,7 +12,7 @@ services:
   # =================================================================
   traefik:
     image: traefik:v3.6
-    container_name: dockerator_traefik
+    container_name: timonel_traefik
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
@@ -21,7 +25,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - dockerator
+      - timonel
     restart: unless-stopped
 
   # =================================================================
@@ -30,17 +34,17 @@ services:
   # Projects will create individual databases/users in this MySQL instance
   mysql:
     image: mysql:8.4
-    container_name: dockerator_mysql
+    container_name: timonel_mysql
     restart: unless-stopped
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: dockerator
+      MYSQL_ROOT_PASSWORD: timonel
       TZ: "Europe/Zurich"
     networks:
-      - dockerator
+      - timonel
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -50,21 +54,21 @@ services:
   # =================================================================
   # ADMINER - Database Management UI
   # =================================================================
-  # Access at: http://dockerator-adminer.localhost
-  # Server: mysql | Username: root | Password: dockerator
+  # Access at: http://timonel-adminer.localhost
+  # Server: mysql | Username: root | Password: timonel
   adminer:
     image: adminer:6
-    container_name: dockerator_adminer
+    container_name: timonel_adminer
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.adminer.rule=Host(`dockerator-adminer.localhost`)"
+      - "traefik.http.routers.adminer.rule=Host(`timonel-adminer.localhost`)"
       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
     environment:
       ADMINER_DEFAULT_SERVER: mysql
       TZ: "Europe/Zurich"
     networks:
-      - dockerator
+      - timonel
     depends_on:
       mysql:
         condition: service_healthy
@@ -72,22 +76,22 @@ services:
   # =================================================================
   # MAILPIT - Email Testing
   # =================================================================
-  # Web UI: http://dockerator-mailpit.localhost
+  # Web UI: http://timonel-mailpit.localhost
   # SMTP: mailpit:1025 (use from WordPress/apps)
   mailpit:
     image: axllent/mailpit:v1.32
-    container_name: dockerator_mailpit
+    container_name: timonel_mailpit
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mailpit.rule=Host(`dockerator-mailpit.localhost`)"
+      - "traefik.http.routers.mailpit.rule=Host(`timonel-mailpit.localhost`)"
       - "traefik.http.services.mailpit.loadbalancer.server.port=8025"
     ports:
       - "1025:1025"
     environment:
       TZ: "Europe/Zurich"
     networks:
-      - dockerator
+      - timonel
 
   # =================================================================
   # YOUR PROJECTS WILL BE ADDED BELOW BY SCRIPTS
@@ -98,7 +102,7 @@ services:
   #   build:
   #     context: ./apps/project-name
   #     dockerfile: Dockerfile
-  #   container_name: dockerator_project_name
+  #   container_name: timonel_project_name
   #   labels:
   #     - "traefik.enable=true"
   #     - "traefik.http.routers.project-name.rule=Host(`project-name.localhost`)"
@@ -110,13 +114,13 @@ services:
   #   environment:
   #     - NODE_ENV=development
   #   networks:
-  #     - dockerator
+  #     - timonel
   #   restart: "no" | change to unless-stopped if you want it to persist
 
 volumes:
   mysql_data:
 
 networks:
-  dockerator:
-    name: dockerator
+  timonel:
+    name: timonel
     driver: bridge

@@ -145,14 +145,14 @@ if grep -q "$SAFE_NAME.localhost" /etc/hosts 2>/dev/null; then
     echo -e "${GREEN}✅ $SAFE_NAME.localhost already in /etc/hosts${NC}"
 else
     echo -e "${YELLOW}⚠️  Domain not in /etc/hosts yet${NC}"
-    echo "   Run: dockerator hosts"
+    echo "   Run: timonel hosts"
 fi
 
 echo ""
 echo -e "${GREEN}🎉 Project '$APP_NAME' ready!${NC}"
 echo ""
 echo "Next steps:"
-echo "  1. Sync hosts: dockerator hosts"
-echo "  2. Start container: dockerator start $SAFE_NAME"
+echo "  1. Sync hosts: timonel hosts"
+echo "  2. Start container: timonel start $SAFE_NAME"
 echo "  3. Access app: http://$SAFE_NAME.localhost"
-echo "  4. View logs: dockerator logs $SAFE_NAME"
+echo "  4. View logs: timonel logs $SAFE_NAME"

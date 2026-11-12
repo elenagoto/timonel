@@ -20,7 +20,7 @@ set_env_value() {
 }
 
 # Create the project's .env from .env.example (only if .env doesn't exist),
-# wired to Dockerator's shared services:
+# wired to Timonel's shared services:
 #   MySQL instead of Laravel's SQLite default, Mailpit for mail,
 #   APP_URL=http://<name>.localhost
 # and QUEUE_CONNECTION=sync: queued jobs (e.g. queued mail) run right away
@@ -49,7 +49,7 @@ laravel_create_env() {
 }
 
 # Make Vite reachable from the browser when it runs inside the container:
-# listen on all interfaces, on the port `dockerator dev` publishes (5173),
+# listen on all interfaces, on the port `timonel dev` publishes (5173),
 # and tell the browser to load assets from localhost:5173 (server.hmr.host,
 # as Laravel's docs recommend for Sail). Edits vite.config.js/.ts in place,
 # inside its existing `server: {` block if there is one. Idempotent: does

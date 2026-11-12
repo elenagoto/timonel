@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Delete a project's MySQL database and its user (same name) from the
-# shared dockerator_mysql container. Counterpart of create-db.sh.
+# shared timonel_mysql container. Counterpart of create-db.sh.
 # Usage: ./drop-db.sh <db-name>
 #
 # Starts MySQL (and waits until it is healthy) if it isn't running yet.
@@ -33,7 +33,7 @@ echo -e "${BLUE}🗄️  Deleting database '$DB_NAME' and its user...${NC}"
 # Start MySQL if needed and wait for its healthcheck (no-op if already healthy)
 docker-compose up -d --wait mysql
 
-docker exec -e MYSQL_PWD=dockerator dockerator_mysql mysql -uroot -e "
+docker exec -e MYSQL_PWD=timonel timonel_mysql mysql -uroot -e "
     DROP DATABASE IF EXISTS \`$DB_NAME\`;
     DROP USER IF EXISTS '$DB_NAME'@'%';
     FLUSH PRIVILEGES;

@@ -12,7 +12,7 @@
 # Options:
 #   --migrate    also run the database migrations (php artisan migrate)
 #   --reinstall  always run composer install and npm install + build
-#                (used by `dockerator restart`)
+#                (used by `timonel restart`)
 # MySQL must already be running (create-db.sh starts it).
 
 set -e

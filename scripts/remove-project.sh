@@ -84,7 +84,7 @@ echo ""
 # ============================================
 # STEP 1: Stop and remove the container + its anonymous volumes
 # ============================================
-if docker ps -a --format '{{.Names}}' | grep -qx "dockerator_$SAFE_NAME"; then
+if docker ps -a --format '{{.Names}}' | grep -qx "timonel_$SAFE_NAME"; then
     # -s stop if running, -f no prompt, -v anonymous volumes (node_modules...)
     docker-compose --profile projects rm -fsv "$SAFE_NAME"
     echo -e "${GREEN}✅ Container and its volumes removed${NC}"
@@ -136,7 +136,7 @@ fi
 if grep -q "$SAFE_NAME.localhost" /etc/hosts 2>/dev/null; then
     echo ""
     echo -e "${YELLOW}⚠️  $SAFE_NAME.localhost is still in /etc/hosts.${NC}"
-    echo "   Run: dockerator hosts   (rebuilds the list from the remaining projects)"
+    echo "   Run: timonel hosts   (rebuilds the list from the remaining projects)"
 fi
 
 echo ""

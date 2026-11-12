@@ -1,22 +1,22 @@
-#compdef dockerator
+#compdef timonel
 
-_dockerator() {
+_timonel() {
     local curcontext="$curcontext" state line ret=1
     typeset -A opt_args
     local -a projects
 
-    # Get dockerator directory
-    if [ -f "$HOME/.dockerator-path" ]; then
-        DOCKERATOR_DIR=$(cat "$HOME/.dockerator-path")
+    # Get timonel directory
+    if [ -f "$HOME/.timonel-path" ]; then
+        TIMONEL_DIR=$(cat "$HOME/.timonel-path")
     else
-        DOCKERATOR_DIR="$HOME/projects/dockerator"
+        TIMONEL_DIR="$HOME/projects/timonel"
     fi
 
     # Get projects
     # Shared helper (run in bash, the scripts' shell): project services
     # only, no core services or network
-    if [ -f "$DOCKERATOR_DIR/docker-compose.yml" ]; then
-        projects=(${(f)"$(cd "$DOCKERATOR_DIR" && \
+    if [ -f "$TIMONEL_DIR/docker-compose.yml" ]; then
+        projects=(${(f)"$(cd "$TIMONEL_DIR" && \
                          bash -c 'source scripts/lib/compose.sh && list_project_services' 2>/dev/null)"})
     fi
 
@@ -67,7 +67,7 @@ _dockerator() {
                 add)
                     # Folders in apps/ that aren't registered yet
                     local -a unregistered
-                    unregistered=(${(f)"$(cd "$DOCKERATOR_DIR" 2>/dev/null && \
+                    unregistered=(${(f)"$(cd "$TIMONEL_DIR" 2>/dev/null && \
                         bash -c 'source scripts/lib/project.sh && source scripts/lib/compose.sh && list_unregistered_apps' 2>/dev/null)"})
                     _describe 'folder' unregistered && ret=0
                     ;;
@@ -78,4 +78,4 @@ _dockerator() {
     return ret
 }
 
-_dockerator "$@"
+_timonel "$@"

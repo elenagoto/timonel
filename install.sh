@@ -1,10 +1,10 @@
 #!/bin/bash
 # Run this after cloning: ./install.sh
 
-echo "🔧 Setting up Dockerator..."
+echo "🔧 Setting up Timonel..."
 
 # Make all scripts executable
-chmod +x dockerator
+chmod +x timonel
 chmod +x scripts/*.sh
 
 # Copy example compose file
@@ -14,26 +14,26 @@ if [ ! -f docker-compose.yml ]; then
 fi
 
 # Create symlink
-if [ ! -L /usr/local/bin/dockerator ]; then
-    sudo ln -s $(pwd)/dockerator /usr/local/bin/dockerator
+if [ ! -L /usr/local/bin/timonel ]; then
+    sudo ln -s $(pwd)/timonel /usr/local/bin/timonel
     echo "✅ Created global command"
 fi
 
 echo "🔧 Setting up autocomplete..."
 
-# Save dockerator path for completion
-echo "$(pwd)" > ~/.dockerator-path
+# Save timonel path for completion
+echo "$(pwd)" > ~/.timonel-path
 
 # Detect shell
 if [ -n "$ZSH_VERSION" ] || [ "$(basename "$SHELL")" = "zsh" ]; then
     # Zsh
     mkdir -p ~/.zsh/completion
-    ln -sf "$(pwd)/dockerator-completion.zsh" ~/.zsh/completion/_dockerator
+    ln -sf "$(pwd)/timonel-completion.zsh" ~/.zsh/completion/_timonel
     echo "✅ Zsh completion installed (restart terminal to activate)"
 elif [ -n "$BASH_VERSION" ]; then
     # Bash
-    sudo ln -sf "$(pwd)/dockerator-completion.bash" /etc/bash_completion.d/dockerator 2>/dev/null || \
-        ln -sf "$(pwd)/dockerator-completion.bash" ~/.bash_completion.d/dockerator
+    sudo ln -sf "$(pwd)/timonel-completion.bash" /etc/bash_completion.d/timonel 2>/dev/null || \
+        ln -sf "$(pwd)/timonel-completion.bash" ~/.bash_completion.d/timonel
     echo "✅ Bash completion installed (restart terminal to activate)"
 fi
 
@@ -42,7 +42,7 @@ echo "✅ Installation complete!"
 echo ""
 echo "Next steps:"
 echo "  1. Open a new terminal window"
-echo "  2. dockerator up"
-echo "  3. dockerator hosts"
-echo "  4. dockerator new nextjs <project-name>  | dockerator new wp <project-name> | dockerator new vite <project-name> | dockerator new parcel <project-name>" 
+echo "  2. timonel up"
+echo "  3. timonel hosts"
+echo "  4. timonel new nextjs <project-name>  | timonel new wp <project-name> | timonel new vite <project-name> | timonel new parcel <project-name>" 
 echo ""

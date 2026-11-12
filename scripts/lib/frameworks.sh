@@ -90,14 +90,14 @@ detect_framework() {
     fi
 }
 
-# The framework of a registered project: its dockerator.framework label,
+# The framework of a registered project: its timonel.framework label,
 # else a guess from its files (projects created before labels existed).
 # Needs scripts/lib/project.sh and scripts/lib/compose.sh sourced as well.
 #   Usage: project_framework <project-name>
 project_framework() {
     local safe framework
     safe=$(to_safe_name "$1")
-    framework=$(service_label "$safe" dockerator.framework)
+    framework=$(service_label "$safe" timonel.framework)
     if [ -n "$framework" ]; then
         echo "$framework"
     else
