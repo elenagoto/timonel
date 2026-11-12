@@ -31,7 +31,7 @@ _dockerator_completions() {
             return 0
             ;;
         new)
-            COMPREPLY=($(compgen -W "nextjs wp vite parcel" -- ${cur}))
+            COMPREPLY=($(compgen -W "nextjs wp vite parcel laravel" -- ${cur}))
             return 0
             ;;
         open|logs|remove|start|stop|restart|dev)

@@ -44,6 +44,7 @@ _dockerator() {
         'wp:WordPress project'
         'vite:Vite React project'
         'parcel:Parcel project'
+        'laravel:Laravel project'
     )
 
     _arguments -C \

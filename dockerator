@@ -57,7 +57,7 @@ show_menu() {
     echo "Available commands:"
     echo "  up                 - Start all containers"
     echo "  down               - Stop all containers"
-    echo "  new <type> <name>  - Create new project (nextjs, vite, parcel, wp)"
+    echo "  new <type> <name>  - Create new project (nextjs, vite, parcel, wp, laravel [--kit react|vue|svelte|livewire])"
     echo "  add <name>         - Dockerize an existing project in apps/<name>"
     echo "  open <name>        - Open a project in VS Code"
     echo "  remove <name>      - Remove a project"
@@ -119,20 +119,43 @@ fi
 
 case $COMMAND in
     new)
+        NEW_USAGE="dockerator new <type> <name> [--with-db] | dockerator new laravel <name> [--kit react|vue|svelte|livewire]"
         if [ $# -lt 3 ]; then
-            echo -e "${RED}Usage: dockerator new <type> <name> [--with-db]${NC}"
-            echo "  Types: nextjs, vite, parcel, wp"
+            echo -e "${RED}Usage: $NEW_USAGE${NC}"
+            echo "  Types: nextjs, vite, parcel, wp, laravel"
             exit 1
         fi
 
         PROJECT_TYPE=$2
         PROJECT_NAME=$3
-        WITH_DB=${4-}
+        WITH_DB=""
+        KIT=""
 
-        # Only one optional flag exists; anything else is a typo, not ignored
-        if [ $# -gt 4 ] || { [ -n "$WITH_DB" ] && [ "$WITH_DB" != "--with-db" ]; }; then
-            echo -e "${RED}Unknown option: ${*:4}${NC}"
-            echo "  Usage: dockerator new <type> <name> [--with-db]"
+        # Optional flags; anything else is a typo, not ignored
+        shift 3
+        while [ $# -gt 0 ]; do
+            case "$1" in
+                --with-db) WITH_DB="--with-db" ;;
+                --kit)
+                    KIT=${2-}
+                    case "$KIT" in
+                        react|vue|svelte|livewire) shift ;;
+                        *)
+                            echo -e "${RED}❌ --kit needs one of: react, vue, svelte, livewire${NC}"
+                            exit 1
+                            ;;
+                    esac
+                    ;;
+                *)
+                    echo -e "${RED}Unknown option: $1${NC}"
+                    echo "  Usage: $NEW_USAGE"
+                    exit 1
+                    ;;
+            esac
+            shift
+        done
+        if [ -n "$KIT" ] && [ "$PROJECT_TYPE" != "laravel" ]; then
+            echo -e "${RED}❌ --kit is only for Laravel projects${NC}"
             exit 1
         fi
 
@@ -164,9 +187,15 @@ case $COMMAND in
             parcel)
                 ./scripts/new-parcel.sh "$PROJECT_NAME" "$WITH_DB"
                 ;;
+            laravel)
+                if [ -n "$WITH_DB" ]; then
+                    echo -e "${YELLOW}ℹ️  Laravel always gets a database; --with-db isn't needed${NC}"
+                fi
+                ./scripts/new-laravel.sh "$PROJECT_NAME" "$KIT"
+                ;;
             *)
                 echo -e "${RED}Unknown project type: $PROJECT_TYPE${NC}"
-                echo "Available types: nextjs, vite, parcel, wp"
+                echo "Available types: nextjs, vite, parcel, wp, laravel"
                 exit 1
                 ;;
         esac
