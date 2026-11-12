@@ -43,17 +43,17 @@ docker --version
 ## 🚀 Quick Start
 
 ```bash
-# 1. Clone and install
-git clone https://github.com/elenagoto/dockerator.git
-cd timonel
-bash install.sh
+# 1. Clone and install (links the `timonel` command, sets up tab completion)
+git clone https://github.com/elenagoto/dockerator.git timonel
+bash timonel/install.sh
 
-# 2. Start base services
+# 2. In a new terminal window: start the shared services
 timonel up
-
-# 3. Sync hosts file
-timonel hosts
 ```
+
+`install.sh` can be run from any folder and again at any time (it only does what's missing). It also cleans up an older `dockerator` install.
+
+> **Do I need `timonel hosts`?** Usually not: Chrome, Firefox and Edge open any `*.localhost` address by themselves. Safari and some command-line tools may not; if a project opens in Chrome but not there, run `timonel hosts` once after adding projects (it writes the names into `/etc/hosts` and asks for your password).
 
 ---
 
@@ -104,7 +104,6 @@ Three commands cover a project's life:
 
 ```bash
 timonel new nextjs my-app
-timonel hosts
 timonel start my-app
 # Visit: http://my-app.localhost
 ```
@@ -115,7 +114,6 @@ Scaffolds a **TypeScript** Next.js app (strict mode) — `src/app/page.tsx`, `sr
 
 ```bash
 timonel new nextjs my-app --with-db
-timonel hosts
 timonel start my-app
 # Visit: http://my-app.localhost
 ```
@@ -136,7 +134,6 @@ Without the flag, the project starts with no database connection — useful for 
 
 ```bash
 timonel new wp my-site
-timonel hosts
 timonel start my-site
 # Visit: http://my-site.localhost
 ```
@@ -147,7 +144,6 @@ Downloads WordPress, creates the `my_site` database and user (starting MySQL fir
 
 ```bash
 timonel new vite my-vite
-timonel hosts
 timonel start my-vite
 # Visit: http://my-vite.localhost
 ```
@@ -158,7 +154,6 @@ Creates a **TypeScript** React app with Vite's official scaffolder (`react-ts` t
 
 ```bash
 timonel new parcel my-parcel
-timonel hosts
 timonel start my-parcel
 # Visit: http://my-parcel.localhost
 ```
@@ -279,7 +274,7 @@ timonel stop <name>     # Stop project
 timonel restart <name>  # Restart and reinstall dependencies (Node: fresh node_modules; Laravel: composer + npm install)
 timonel logs [name]     # Follow logs (one project, or everything)
 timonel remove <name>   # Remove project completely (container, its volumes and image, folder; asks before deleting its database)
-timonel hosts           # Sync /etc/hosts
+timonel hosts           # Write the project names into /etc/hosts (only if Safari or a tool needs it)
 ```
 
 Projects don't start with `timonel up`; start each one with `timonel start <name>` (or `dev`, which starts it if needed). Every command accepts the folder name or the URL form of a project (`my_app` or `my-app`), and rejects options it doesn't know instead of ignoring them.
@@ -381,13 +376,13 @@ docker compose down
 ### Can't Access project.localhost
 
 ```bash
-# 1. Is container running?
-docker compose ps
+# 1. Is the container running?
+timonel list
 
-# 2. Sync hosts file
+# 2. Safari or a command-line tool? Write the names into /etc/hosts
 timonel hosts
 
-# 3. Check Traefik dashboard
+# 3. Check the Traefik dashboard
 open http://localhost:8080
 ```
 
@@ -447,12 +442,9 @@ docker run --rm -v "$(pwd)":/data alpine rm -rf /data/apps/project-name
 
 ## ⚠️ Common Mistakes
 
-### ❌ Forgetting to sync hosts
+### ❌ Expecting every app to open `*.localhost` without `timonel hosts`
 
-```bash
-timonel new nextjs my-app
-timonel hosts  # ← Don't forget this!
-```
+Chrome, Firefox and Edge open `my-app.localhost` on their own; Safari and some tools may not. If a project opens in Chrome but not elsewhere, run `timonel hosts` once (again after adding new projects).
 
 ### ❌ Editing docker-compose.yml directly
 

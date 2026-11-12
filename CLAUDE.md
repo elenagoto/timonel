@@ -13,7 +13,7 @@ Timonel is a bash CLI tool (not an app you build/test) that orchestrates Docker 
 There is no build/lint/test suite — this is a shell script toolkit. To work on it:
 
 ```bash
-./install.sh                       # symlinks `timonel` to /usr/local/bin, sets up shell completion, copies docker-compose.yml.example -> docker-compose.yml
+bash install.sh                    # from any folder, re-runnable: links /usr/local/bin/timonel (sudo only if needed), zsh/bash completion block in ~/.zshrc / ~/.bashrc, docker-compose.yml from the template, removes old `dockerator` links
 timonel up / down                # start/stop shared services (Traefik, MySQL, Adminer, Mailpit)
 timonel new nextjs|wp|vite|parcel <name> [--with-db]   # scaffold a fresh project (refuses an existing apps/<name>)
 timonel new laravel <name> [--kit react|vue|svelte|livewire]  # Laravel (scripts/new-laravel.sh)
@@ -55,7 +55,7 @@ Manually testing a change to a `scripts/*.sh` file means running the correspondi
 
 **`remove` and the shared commands.** `remove-project.sh` reads everything that depends on the compose block first (folder, `DB_NAME` env via `service_label`, image via `docker compose config --images`), asks all its questions up front (remove? drop the database too? — default keep), then runs `rm -fsv` (anonymous volumes included), removes the image, optionally `drop-db.sh`, the block and the folder. `down` and `logs` pass `--profile projects`: Compose's docs say plain `down` skips services in a profile; Compose 5.7 includes them anyway, but the flag keeps every version consistent. `up` deliberately doesn't (projects start one by one).
 
-**Routing**: every project service gets Traefik labels (`traefik.http.routers.<name>.rule=Host(\`<name>.localhost\`)`); `scripts/sync-hosts.sh` greps all such labels out of `docker-compose.yml` and writes a single marked block into `/etc/hosts` (requires sudo, re-execs itself with `sudo` if needed).
+**Routing**: every project service gets Traefik labels (`traefik.http.routers.<name>.rule=Host(\`<name>.localhost\`)`); `scripts/sync-hosts.sh` greps all such labels out of `docker-compose.yml` and writes a single marked block into `/etc/hosts` (requires sudo, re-execs itself with `sudo` if needed). It is **optional**: Chrome/Firefox/Edge resolve `*.localhost` themselves, so `new`/`add` no longer remind you to run it (only a one-line hint for Safari / CLI tools).
 
 ## Conventions when adding/editing scripts
 

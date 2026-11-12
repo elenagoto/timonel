@@ -116,24 +116,12 @@ if [ "$WITH_DB" = "--with-db" ]; then
     ./scripts/create-db.sh "$SAFE_DB"
 fi
 
-# ============================================
-# STEP 7: Check /etc/hosts
-# ============================================
-echo ""
-echo -e "${BLUE}📋 Final steps:${NC}"
-
-if grep -q "$SAFE_NAME.localhost" /etc/hosts 2>/dev/null; then
-    echo -e "${GREEN}✅ $SAFE_NAME.localhost already in /etc/hosts${NC}"
-else
-    echo -e "${YELLOW}⚠️  Domain not in /etc/hosts yet${NC}"
-    echo "   Run: timonel hosts"
-fi
-
 echo ""
 echo -e "${GREEN}🎉 Project '$APP_NAME' ready!${NC}"
 echo ""
 echo "Next steps:"
-echo "  1. Sync hosts: timonel hosts"
-echo "  2. Start container: timonel start $SAFE_NAME"
-echo "  3. Access app: http://$SAFE_NAME.localhost"
-echo "  4. View logs: timonel logs $SAFE_NAME"
+echo "  1. Start container: timonel start $SAFE_NAME"
+echo "  2. Access app: http://$SAFE_NAME.localhost"
+echo "  3. View logs: timonel logs $SAFE_NAME"
+echo ""
+echo "(Safari or a command-line tool can't open it? Run once: timonel hosts)"

@@ -129,19 +129,6 @@ else
     ./scripts/add-to-compose.sh "$APP_NAME" wordpress
 fi
 
-# ============================================
-# STEP 7: Remind about /etc/hosts
-# ============================================
-echo ""
-echo -e "${BLUE}📋 Final steps:${NC}"
-
-if grep -q "$SAFE_URL.localhost" /etc/hosts 2>/dev/null; then
-    echo -e "${GREEN}✅ $SAFE_URL.localhost already in /etc/hosts${NC}"
-else
-    echo -e "${YELLOW}⚠️  Domain not in /etc/hosts yet${NC}"
-    echo "   Run: timonel hosts"
-fi
-
 echo ""
 echo -e "${GREEN}🎉 WordPress project '$APP_NAME' ready!${NC}"
 echo ""
@@ -151,8 +138,8 @@ echo "  User: $SAFE_NAME"
 echo "  Password: $SAFE_NAME"
 echo ""
 echo "Next steps:"
-echo "  1. Sync hosts: timonel hosts"
-echo "  2. Start container: timonel start $SAFE_URL"
-echo "  3. Visit: http://$SAFE_URL.localhost"
-echo "  4. Complete WordPress installation"
+echo "  1. Start container: timonel start $SAFE_URL"
+echo "  2. Visit: http://$SAFE_URL.localhost"
+echo "  3. Complete WordPress installation"
 echo ""
+echo "(Safari or a command-line tool can't open it? Run once: timonel hosts)"
