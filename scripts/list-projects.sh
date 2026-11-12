@@ -23,7 +23,7 @@ echo ""
 
 # Get running services (matched exactly per project below, so core
 # services in this list don't matter)
-RUNNING=$(docker-compose ps --services --filter "status=running" 2>/dev/null || true)
+RUNNING=$(docker compose ps --services --filter "status=running" 2>/dev/null || true)
 
 # Project services only: keys under `services:`, minus the core services
 ALL_SERVICES=$(list_project_services)

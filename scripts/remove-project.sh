@@ -52,7 +52,7 @@ IMAGE=""
 if project_service_exists "$SAFE_NAME"; then
     IN_COMPOSE=true
     DB_NAME=$(service_label "$SAFE_NAME" DB_NAME)
-    IMAGE=$(docker-compose --profile projects config --images "$SAFE_NAME" 2>/dev/null || true)
+    IMAGE=$(docker compose --profile projects config --images "$SAFE_NAME" 2>/dev/null || true)
 fi
 
 if [ "$IN_COMPOSE" = false ] && [ ! -d "$APP_DIR" ]; then
@@ -86,7 +86,7 @@ echo ""
 # ============================================
 if docker ps -a --format '{{.Names}}' | grep -qx "timonel_$SAFE_NAME"; then
     # -s stop if running, -f no prompt, -v anonymous volumes (node_modules...)
-    docker-compose --profile projects rm -fsv "$SAFE_NAME"
+    docker compose --profile projects rm -fsv "$SAFE_NAME"
     echo -e "${GREEN}✅ Container and its volumes removed${NC}"
 else
     echo -e "${BLUE}ℹ️  No container${NC}"

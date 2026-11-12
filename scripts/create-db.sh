@@ -32,7 +32,7 @@ echo -e "${BLUE}🗄️  Setting up database '$DB_NAME'...${NC}"
 
 # Start MySQL if needed and wait for its healthcheck (no-op if already healthy)
 echo -e "${BLUE}   Waiting for MySQL to be ready...${NC}"
-docker-compose up -d --wait mysql
+docker compose up -d --wait mysql
 
 docker exec -e MYSQL_PWD=timonel timonel_mysql mysql -uroot -e "
     CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

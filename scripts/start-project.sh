@@ -31,7 +31,7 @@ fi
 echo -e "${BLUE}🚀 Starting $PROJECT_NAME...${NC}"
 
 # Start the specific service
-docker-compose --profile projects up -d "$SAFE_URL"
+docker compose --profile projects up -d "$SAFE_URL"
 
 echo -e "${GREEN}✅ $PROJECT_NAME started${NC}"
 echo ""

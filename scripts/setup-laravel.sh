@@ -3,7 +3,7 @@
 # Finish setting up a Laravel project inside its own image
 # Usage: ./setup-laravel.sh <project-name> [--migrate] [--reinstall]
 #
-# Runs in a one-off container of the project (docker-compose run --rm),
+# Runs in a one-off container of the project (docker compose run --rm),
 # as your user so the files stay yours, and only does what's missing:
 #   - composer install         if vendor/ is missing
 #   - php artisan key:generate if .env has no APP_KEY
@@ -74,7 +74,7 @@ fi
 '
 
 # --no-deps: MySQL is already running (and a project container may be too)
-docker-compose --profile projects run --rm --no-deps \
+docker compose --profile projects run --rm --no-deps \
     --user "$(id -u):$(id -g)" \
     -e HOME=/tmp \
     -e COMPOSER_HOME=/tmp/composer \

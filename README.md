@@ -59,12 +59,15 @@ timonel hosts
 
 ## 🌐 Access Services
 
-- 🎛️ **Traefik Dashboard**: http://localhost:8080
+- 🎛️ **Traefik Dashboard**: http://localhost:8080 (this Mac only)
+- 🐬 **MySQL** for local tools (TablePlus, Sequel Ace...): `127.0.0.1:3306`, user `root`, password `timonel` (this Mac only)
 - 🗄️ **Adminer** (Database): http://timonel-adminer.localhost
   - Server: `mysql` | User: `root` | Pass: `timonel`
 - 📧 **Mailpit** (Email Testing): http://timonel-mailpit.localhost
   - WordPress projects send all their mail here automatically (via a small `timonel-mailpit.php` must-use plugin), and so do Laravel projects (`MAIL_HOST=mailpit` in their `.env`)
-  - Other apps: SMTP host `mailpit`, port `1025`, no auth/TLS
+  - Other apps: SMTP host `mailpit`, port `1025`, no auth/TLS (apps running outside Docker: `127.0.0.1:1025`)
+
+The dashboard, MySQL and Mailpit's SMTP port only accept connections from your own Mac, not from other devices on your network. Project sites on port 80 are reachable as before.
 
 ---
 
@@ -372,14 +375,14 @@ Access all databases via Adminer: http://timonel-adminer.localhost
 lsof -i :80
 
 # Stop other Docker projects
-docker-compose down
+docker compose down
 ```
 
 ### Can't Access project.localhost
 
 ```bash
 # 1. Is container running?
-docker-compose ps
+docker compose ps
 
 # 2. Sync hosts file
 timonel hosts
@@ -392,7 +395,7 @@ open http://localhost:8080
 
 ```bash
 # Wait ~30 seconds for MySQL to be healthy
-docker-compose ps
+docker compose ps
 
 # Check MySQL logs
 timonel logs mysql

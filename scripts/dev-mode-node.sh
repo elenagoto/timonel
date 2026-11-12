@@ -36,7 +36,7 @@ fi
 # Start the container if it isn't running
 if ! docker ps --format '{{.Names}}' | grep -qx "timonel_$SAFE_NAME"; then
     echo -e "${YELLOW}⚠️  Container not running. Starting...${NC}"
-    docker-compose --profile projects up -d "$SAFE_NAME"
+    docker compose --profile projects up -d "$SAFE_NAME"
     sleep 2
 fi
 
@@ -70,4 +70,4 @@ echo -e "${YELLOW}Type 'exit' when done${NC}"
 echo ""
 
 # Enter the container at /app
-docker-compose exec "$SAFE_NAME" sh
+docker compose exec "$SAFE_NAME" sh

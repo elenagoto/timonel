@@ -31,6 +31,6 @@ fi
 echo -e "${BLUE}⏸️  Stopping $PROJECT_NAME...${NC}"
 
 # Stop the specific service
-docker-compose stop "$SAFE_URL"
+docker compose stop "$SAFE_URL"
 
 echo -e "${GREEN}✅ $PROJECT_NAME stopped${NC}"

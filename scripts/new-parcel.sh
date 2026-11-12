@@ -27,7 +27,7 @@ echo -e "${BLUE}Creating Parcel project: $APP_NAME${NC}"
 echo ""
 
 # ============================================
-# STEP 0: Check if app exists in docker-compose
+# STEP 0: Check if app exists in docker-compose.yml
 # ============================================
 SAFE_NAME=$(to_safe_name "$APP_NAME")
 if project_service_exists "$SAFE_NAME"; then

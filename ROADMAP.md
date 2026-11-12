@@ -138,9 +138,9 @@ timonel history [--errors]                # command log (phase 4)
 
 - [x] Rename the dispatcher, completion files and functions, `~/.dockerator-path`, container prefix `timonel_`, network, `timonel-adminer.localhost` / `timonel-mailpit.localhost`, `/etc/hosts` markers, MySQL root password, reserved names, Traefik router names — done with one case-preserving replacement (dockerator→timonel, Dockerator→Timonel, DOCKERATOR_→TIMONEL_) plus `git mv` of `timonel`, `timonel-completion.{bash,zsh}`, `timonel-mailpit.php`. GitHub URLs keep the old name until the repo is renamed.
 - [x] Set an explicit compose project name (`name: timonel`) so volume names no longer depend on the folder name
-- [ ] Switch `docker-compose` → `docker compose` everywhere *(audit)*
-- [ ] Expose MySQL 3306, Traefik dashboard 8080 and Mailpit 1025 on `127.0.0.1` only *(audit: currently open to the LAN)*
-- [ ] Dispatcher cleanup *(audit)*: remove the `DEBUG:` echoes in `hosts`; move the `chmod` self-fix after symlink resolution (or drop it); regenerate the help text from the real command list
+- [x] Switch `docker-compose` → `docker compose` everywhere *(audit)*
+- [x] Expose MySQL 3306, Traefik dashboard 8080 and Mailpit 1025 on `127.0.0.1` only *(audit: currently open to the LAN)* — verified by starting the stack: these three answer on 127.0.0.1 and refuse connections on the Mac's network address; port 80 stays on all interfaces (browsers also use IPv6 `::1` for `*.localhost`)
+- [x] Dispatcher cleanup *(audit)*: remove the `DEBUG:` echoes in `hosts`; move the `chmod` self-fix after symlink resolution (or drop it); regenerate the help text from the real command list
 - [ ] `install.sh` *(audit)*: quote `$(pwd)`; work from any directory; add the zsh completion folder to `fpath`; remove the old `dockerator` symlink and completion if present
 - [x] **Fresh start** (done 2026-11-12, before the rename, as you chose):
   - Backups in `~/dockerator-backup-2026-11-12/`: `apps.tar.gz` (all 11 projects incl. their `.git`, without `node_modules`/`.next`/`.parcel-cache`, plus the old `docker-compose.yml`; verified file for file) and `mysql-databases.sql` (`portfolio`, `test_wp`; verified by restoring into a throwaway MySQL: 27 tables, 610 rows, all counts identical)
@@ -149,6 +149,7 @@ timonel history [--errors]                # command log (phase 4)
   - [ ] Old install leftovers (`/usr/local/bin/dockerator`, `~/.dockerator-path`, `~/.zsh/completion/_dockerator`): removed by the new `install.sh` when Timonel is installed
 - [ ] Rename the local folder and the GitHub repo (you), then update the clone URL in the README
   - **Rename** `elenagoto/dockerator` → `timonel` in GitHub's repo settings. GitHub then redirects the old URL (web pages and `git clone/pull/push`) to the new one, so the link already sent on CVs keeps working.
+  - With the GitHub CLI (installed: gh 2.103.3): `gh auth login` (you, in the browser), then `gh repo rename timonel` from the repo folder. It is the same rename as in the settings (redirect kept) and also updates the local `origin` remote (currently `git@github.com:elenagoto/dockerator.git`). Claude asks for a go-ahead before running it.
   - **Never create a new repo named `dockerator`** on the account: GitHub drops the redirect when the old name is reused, and CV visitors would land on that repo instead.
   - Add "Formerly known as Dockerator" near the top of the README, so visitors from the old link know they're in the right place.
   - Update the CV link for future applications (old copies keep working via the redirect).

@@ -3,7 +3,7 @@
 # Restart a project with a full dependency reinstall
 # Usage: ./restart-project.sh <project-name>
 #
-# Node projects: a plain `docker-compose restart` (or even `up --build`)
+# Node projects: a plain `docker compose restart` (or even `up --build`)
 # does NOT reinstall npm dependencies: node_modules lives in an anonymous
 # volume that Compose reuses across restarts by default. This rebuilds the
 # image without cache and discards that anonymous volume so `npm install`
@@ -49,7 +49,7 @@ echo ""
 if [ "$STACK" = "php" ]; then
     # The PHP image has nothing project-specific to rebuild
     echo -e "${BLUE}🔁 Recreating container...${NC}"
-    docker-compose --profile projects up -d --force-recreate "$SAFE_URL"
+    docker compose --profile projects up -d --force-recreate "$SAFE_URL"
     echo -e "${GREEN}✅ Container recreated${NC}"
 
     if [ "$FRAMEWORK" = "laravel" ]; then
@@ -59,13 +59,13 @@ if [ "$STACK" = "php" ]; then
 else
     # STEP 1: Rebuild without cache, so RUN npm install runs from scratch
     echo -e "${BLUE}📦 Rebuilding image (no cache)...${NC}"
-    docker-compose build --no-cache "$SAFE_URL"
+    docker compose build --no-cache "$SAFE_URL"
     echo -e "${GREEN}✅ Image rebuilt${NC}"
 
     # STEP 2: Recreate the container AND discard its anonymous volumes
     # --renew-anon-volumes is what actually drops the stale node_modules
     echo -e "${BLUE}🔁 Recreating container with fresh volumes...${NC}"
-    docker-compose --profile projects up -d --force-recreate --renew-anon-volumes "$SAFE_URL"
+    docker compose --profile projects up -d --force-recreate --renew-anon-volumes "$SAFE_URL"
     echo -e "${GREEN}✅ Container recreated${NC}"
 fi
 

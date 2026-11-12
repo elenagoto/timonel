@@ -31,7 +31,7 @@ fi
 echo -e "${BLUE}🗄️  Deleting database '$DB_NAME' and its user...${NC}"
 
 # Start MySQL if needed and wait for its healthcheck (no-op if already healthy)
-docker-compose up -d --wait mysql
+docker compose up -d --wait mysql
 
 docker exec -e MYSQL_PWD=timonel timonel_mysql mysql -uroot -e "
     DROP DATABASE IF EXISTS \`$DB_NAME\`;

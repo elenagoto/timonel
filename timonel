@@ -1,15 +1,12 @@
 #!/bin/bash
 
-# Timonel - Multi-project Docker orchestration
-# Similar to devner but for learning Docker concepts
+# Timonel - run many local projects (Next.js, Vite, Parcel, WordPress,
+# Laravel) side by side in Docker, behind Traefik, with shared MySQL,
+# Adminer and Mailpit. This file only dispatches: each command is a script
+# in scripts/.
 
-# Auto-fix script permissions if needed
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ ! -x "$SCRIPT_DIR/scripts/new-wordpress.sh" ]; then
-    chmod +x "$SCRIPT_DIR"/scripts/*.sh 2>/dev/null || true
-fi
-
-# Get the directory where this script is located
+# Get the directory where this script really lives (it's usually run
+# through the /usr/local/bin/timonel symlink)
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do
   SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
@@ -21,17 +18,15 @@ SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 # Change to that directory so all paths work
 cd "$SCRIPT_DIR"
 
+# Restore the scripts' execute permission if it got lost (e.g. the repo was
+# downloaded as a zip instead of cloned)
+if [ ! -x scripts/add-to-compose.sh ]; then
+    chmod +x scripts/*.sh 2>/dev/null || true
+fi
+
 # Project-name helpers (validation, reserved names) and compose lookups
 source scripts/lib/project.sh
 source scripts/lib/compose.sh
-
-# DEBUG - temporary
-# echo "DEBUG: Script dir: $SCRIPT_DIR"
-# echo "DEBUG: Current dir: $(pwd)"
-# echo "DEBUG: Scripts directory contents:"
-# ls -la scripts/ 2>&1 || echo "scripts/ not found!"
-# echo ""
-
 
 set -e  # Exit on any error
 
@@ -54,21 +49,26 @@ show_header() {
 
 show_menu() {
     echo ""
-    echo "Available commands:"
-    echo "  up                 - Start all containers"
-    echo "  down               - Stop all containers"
-    echo "  new <type> <name>  - Create new project (nextjs, vite, parcel, wp, laravel [--kit react|vue|svelte|livewire])"
-    echo "  add <name>         - Dockerize an existing project in apps/<name>"
-    echo "  open <name>        - Open a project in VS Code"
-    echo "  remove <name>      - Remove a project"
-    echo "  start <name>       - Start a specific project"
-    echo "  stop <name>        - Stop a specific project"
-    echo "  restart <name>     - Restart with a full dependency reinstall"
-    echo "  dev <name>         - Open a dev shell in a project (WordPress/Laravel: with Vite's port 5173)"
-    echo "  list               - List all projects"
-    echo "  logs <name>        - View logs for a project"
-    echo "  hosts              - Sync /etc/hosts with all *.localhost domains"
-    echo "  help               - Show this menu"
+    echo "Shared services:"
+    echo "  up                         Start Traefik, MySQL, Adminer and Mailpit"
+    echo "  down                       Stop everything, projects included"
+    echo ""
+    echo "Projects:"
+    echo "  new <type> <name>          Create a project: nextjs, vite, parcel, wp, laravel"
+    echo "                             [--with-db]  (Node types) connect it to MySQL"
+    echo "                             [--kit react|vue|svelte|livewire]  (laravel) starter kit"
+    echo "  add <name> [--with-db]     Dockerize an existing project in apps/<name>"
+    echo "  dev <name>                 Open a dev shell in a project"
+    echo "  start | stop <name>        Start or stop a project"
+    echo "  restart <name>             Restart and reinstall its dependencies"
+    echo "  list                       List projects with type and status"
+    echo "  logs [name]                Follow logs (one project, or everything)"
+    echo "  open <name>                Open a project in VS Code"
+    echo "  remove <name>              Remove a project (asks first)"
+    echo ""
+    echo "Other:"
+    echo "  hosts                      Write the *.localhost names into /etc/hosts (sudo)"
+    echo "  help                       Show this menu"
     echo ""
 }
 
@@ -242,9 +242,6 @@ case $COMMAND in
         ./scripts/dev-project.sh "$PROJECT_NAME"
         ;;
     hosts)
-        echo "DEBUG: Running sync-hosts.sh"
-        echo "DEBUG: Current dir: $(pwd)"
-        echo "DEBUG: Script exists: $(ls -la scripts/sync-hosts.sh 2>&1)"
         ./scripts/sync-hosts.sh
         ;;
     list)
@@ -279,20 +276,20 @@ case $COMMAND in
         ./scripts/restart-project.sh "$PROJECT_NAME"
         ;;
     up)
-        docker-compose up -d
+        docker compose up -d
         ;;
     down)
         # --profile projects: also stop project containers. Recent Compose
         # versions do this anyway; older ones skip services in a profile.
-        docker-compose --profile projects down
+        docker compose --profile projects down
         ;;
     logs)
         # --profile projects: include project containers in the combined
         # logs on every Compose version (see `down`)
         if [ -n "$2" ]; then
-            docker-compose --profile projects logs -f "$(to_safe_name "$2")"
+            docker compose --profile projects logs -f "$(to_safe_name "$2")"
         else
-            docker-compose --profile projects logs -f
+            docker compose --profile projects logs -f
         fi
         ;;
     help)

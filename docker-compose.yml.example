@@ -21,7 +21,7 @@ services:
       - "--api.insecure=true"
     ports:
       - "80:80"
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"   # dashboard (no auth): this Mac only
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -37,7 +37,7 @@ services:
     container_name: timonel_mysql
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"   # MySQL for local tools (TablePlus...): this Mac only
     volumes:
       - mysql_data:/var/lib/mysql
     environment:
@@ -87,7 +87,7 @@ services:
       - "traefik.http.routers.mailpit.rule=Host(`timonel-mailpit.localhost`)"
       - "traefik.http.services.mailpit.loadbalancer.server.port=8025"
     ports:
-      - "1025:1025"
+      - "127.0.0.1:1025:1025"   # SMTP for apps running outside Docker: this Mac only
     environment:
       TZ: "Europe/Zurich"
     networks:

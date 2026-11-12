@@ -77,7 +77,7 @@ cleanup() {
         echo ""
         echo -e "${BLUE}🧹 Cleaning up: recreating container without port $VITE_PORT...${NC}"
         # Same config minus the override -> Compose recreates the container
-        docker-compose --profile projects up -d "$SAFE_URL" || \
+        docker compose --profile projects up -d "$SAFE_URL" || \
             echo -e "${YELLOW}⚠️  Could not recreate container; run: timonel start $SAFE_URL${NC}"
         rm -rf "$OVERRIDE_DIR"
     fi
@@ -87,7 +87,7 @@ trap cleanup EXIT
 
 if [ "$ALREADY_PUBLISHED" = "yes" ]; then
     echo -e "${GREEN}✅ Port $VITE_PORT already published for $PROJECT_NAME${NC}"
-    docker-compose --profile projects up -d "$SAFE_URL"
+    docker compose --profile projects up -d "$SAFE_URL"
 else
     echo -e "${BLUE}📝 Publishing Vite port ($VITE_PORT) for $PROJECT_NAME...${NC}"
     OVERRIDE_DIR=$(mktemp -d)
@@ -98,7 +98,7 @@ services:
       - "$VITE_PORT:$VITE_PORT"
 EOF
     # Recreates the container with the extra port (starts it if stopped)
-    docker-compose -f docker-compose.yml -f "$OVERRIDE_DIR/dev.override.yml" \
+    docker compose -f docker-compose.yml -f "$OVERRIDE_DIR/dev.override.yml" \
         --profile projects up -d "$SAFE_URL"
 fi
 
@@ -127,4 +127,4 @@ echo -e "${YELLOW}Type 'exit' when done to cleanup${NC}"
 echo ""
 
 # Enter the container at the working directory
-docker-compose exec "$SAFE_URL" sh -c "cd '$WORK_DIR' && exec sh"
+docker compose exec "$SAFE_URL" sh -c "cd '$WORK_DIR' && exec sh"
