@@ -4,7 +4,7 @@ Tracks the redesign and rename of this tool. Tick items off as they land.
 
 **Decisions so far**
 
-- New name: **timonel** (helmsman: the one who steers).
+- New name: **timonel** (helmsman: the one who steers). Also considered: muelle, estiba, zarpa, batuta, and maestro (dropped: the `maestro` command is already used by mobile.dev's popular mobile-testing tool).
 - Fresh start: existing projects in `apps/`, their containers and the old MySQL volume are not migrated.
 - Two **stacks** instead of four project types: **node** (Next, Vite, Parcel…) and **php** (WordPress and Laravel).
 - Laravel is built together with the php stack (phases 1–2), so the stack is shaped by two real frameworks rather than WordPress quirks alone.
@@ -76,10 +76,13 @@ timonel history [--errors]                # command log (phase 4)
 
 ## Phase 1: Restructure into stacks and templates
 
-- [ ] One Node Dockerfile and one compose generator for the node stack (replaces the 3 near-identical `add-to-compose-*` scripts and Dockerfiles)
-- [ ] Per-framework settings table (port, extra cache volume such as `/app/.next`)
-- [ ] Write stack/framework labels into every service block
-- [ ] `--with-db` works for every template, not just Next.js
+- [x] One Node Dockerfile and one compose generator for the node stack (`templates/stacks/node/`, `add-to-compose.sh`; replaces the 3 near-identical `add-to-compose-*` scripts and Dockerfiles)
+- [x] Per-framework settings table for Node (`scripts/lib/frameworks.sh`: stack, port, cache volumes, dev args, display name)
+  - [ ] Add the php entries (wordpress, laravel: port 80, web root) in group 4
+- [x] Write stack/framework labels into Node service blocks; `list` reads them
+  - [ ] WordPress blocks too (group 4)
+- [x] `--with-db` works for Next.js, Vite and Parcel; the dispatcher rejects unknown flags after the name (WordPress always gets a database)
+- [ ] Vite's runtime is untested with the shared image (needs a scaffolded app, which group 5 does in a container). Next.js and Parcel were built and served from it.
 - [ ] php stack: one shared PHP image and compose generator for WordPress and Laravel
   - [ ] Union of PHP extensions: mysqli, pdo_mysql, gd, imagick, exif, intl, zip, opcache, bcmath, pcntl
   - [ ] Composer in the image
@@ -87,7 +90,7 @@ timonel history [--errors]                # command log (phase 4)
   - [ ] Dev port 5173 mechanism from `dev-mode-wp.sh` generalised to the whole php stack
 - [ ] Scaffolding runs in a temporary container (Vite: drop the "npm required on your Mac" prerequisite)
 - [x] Shared helper that lists project services from the `services:` section only. Used by `list` and both completions. *(Audit: `grep "^  name:"` also matches the `dockerator:` network key, and filtering on "mysql" hides projects with "mysql" in their name.)*
-- [ ] Use it for the per-script "is this project in the compose file?" checks too (still `grep "^  name:"`; safe for now thanks to reserved names). Do it as those scripts are rewritten in groups 3–4.
+- [ ] Use it for the per-script "is this project in the compose file?" checks too (`project_service_exists`). Done in `add-to-compose.sh` and the three Node `new-*` scripts; still `grep "^  name:"` in the WordPress scripts (group 4) and in start/stop/restart/dev/remove (phase 2 rewrites them).
 - [x] Make the compose insert keep the last line of the file *(found while testing: the `while read` loop drops a final line without a trailing newline, e.g. `driver: bridge`)*
 - [x] **Updates** *(audit)*:
   - [x] Node 20 (end-of-life April 2026) → `node:24-alpine` everywhere (also in the PHP image, replacing `setup_20.x`)

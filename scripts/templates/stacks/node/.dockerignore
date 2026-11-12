@@ -1,0 +1,19 @@
+# Dependencies and build output (rebuilt inside the container)
+node_modules
+.next
+.parcel-cache
+dist
+build
+
+# Docker files themselves
+Dockerfile
+.dockerignore
+
+# Local-only files
+.git
+.vscode
+.DS_Store
+npm-debug.log
+.env
+.env*.local
+README.md

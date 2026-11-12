@@ -7,12 +7,14 @@ set -e
 
 source scripts/lib/project.sh
 source scripts/lib/compose.sh
+source scripts/lib/frameworks.sh
 
 # Colors
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
 NC='\033[0m'
 
 echo -e "${BLUE}📋 Dockerator Projects${NC}"
@@ -35,7 +37,7 @@ if [ -z "$ALL_SERVICES" ]; then
 fi
 
 # Header
-echo -e "${BLUE}PROJECT              TYPE           STATUS          URL${NC}"
+echo -e "${BLUE}PROJECT              TYPE           STATUS           URL${NC}"
 echo "────────────────────────────────────────────────────────────────────────"
 
 # Display projects
@@ -48,38 +50,45 @@ for project in $ALL_SERVICES; do
         continue
     fi
 
-    # Determine type
-    if [ -f "$dir/wp-config.php" ]; then
-        TYPE="${CYAN}WordPress${NC}"
-        TYPE_DISPLAY="WordPress"
+    # Determine type: the framework label written by add-to-compose.sh,
+    # else guess from files (WordPress and projects created before labels)
+    FRAMEWORK=$(service_label "$project" dockerator.framework)
+    if [ -n "$FRAMEWORK" ]; then
+        TYPE_NAME=$(framework_setting "$FRAMEWORK" display 2>/dev/null || echo "$FRAMEWORK")
+    elif [ -f "$dir/wp-config.php" ]; then
+        TYPE_NAME="WordPress"
     elif [ -f "$dir/vite.config.js" ] || [ -f "$dir/vite.config.ts" ]; then
-        TYPE="${YELLOW}Vite React${NC}"
-        TYPE_DISPLAY="Vite React"
+        TYPE_NAME="Vite"
+    elif [ -f "$dir/.parcelrc" ]; then
+        TYPE_NAME="Parcel"
     elif [ -f "$dir/package.json" ]; then
-        TYPE="${GREEN}Next.js${NC}"
-        TYPE_DISPLAY="Next.js  "
+        TYPE_NAME="Next.js"
     else
-        TYPE="Unknown"
-        TYPE_DISPLAY="Unknown  "
+        TYPE_NAME="Unknown"
     fi
-    
-    # Check status
-    if echo "$RUNNING" | grep -q "^$project$"; then
-        STATUS="${GREEN}●${NC} Running"
+    case "$TYPE_NAME" in
+        WordPress) TYPE_COLOR=$CYAN ;;
+        Vite)      TYPE_COLOR=$YELLOW ;;
+        Next.js)   TYPE_COLOR=$GREEN ;;
+        Parcel)    TYPE_COLOR=$MAGENTA ;;
+        *)         TYPE_COLOR=$NC ;;
+    esac
+
+    # Check status (exact match)
+    if echo "$RUNNING" | grep -qx -- "$project"; then
+        STATUS_DOT="${GREEN}●${NC}"
+        STATUS_TEXT="Running"
     else
-        STATUS="○ Stopped"
+        STATUS_DOT="○"
+        STATUS_TEXT="Stopped"
     fi
-    
+
     # URL
     URL="http://$project.localhost"
-    
-    # Use echo -e for color support, with manual spacing
-    printf "%-20s " "$project"
-    echo -en "$TYPE"
-    printf "%-5s" ""  # Spacing after type
-    echo -en "$STATUS"
-    printf "%-5s" ""  # Spacing after status
-    echo "$URL"
+
+    # Pad the plain text, then wrap it in colour codes, so columns line up
+    printf "%-20s %b%-14s%b %b %-14s %s\n" \
+        "$project" "$TYPE_COLOR" "$TYPE_NAME" "$NC" "$STATUS_DOT" "$STATUS_TEXT" "$URL"
 done
 
 echo ""

@@ -29,6 +29,33 @@ list_project_services() {
     ' "$file"
 }
 
+# True if <service> is a project service in docker-compose.yml
+project_service_exists() {
+    list_project_services "${2:-docker-compose.yml}" | grep -qx -- "$1"
+}
+
+# Print the value of label <key> on <service>, e.g.
+#   service_label my-app dockerator.framework   ->  next
+# Prints nothing if the service or label doesn't exist.
+service_label() {
+    local service="$1" key="$2" file="${3:-docker-compose.yml}"
+    [ -f "$file" ] || return 0
+    awk -v svc="  $service:" -v key="$key=" -v q="'" '
+        { line = $0; sub(/[ \t\r]+$/, "", line) }
+        line == svc { found = 1; next }
+        # The block ends at the next line indented 0-2 spaces
+        found && match($0, /[^ \t\r]/) && RSTART <= 3 { exit }
+        found && (i = index($0, key)) {
+            value = substr($0, i + length(key))
+            sub(/[ \t\r]+$/, "", value)
+            gsub(/"/, "", value)
+            gsub(q, "", value)
+            print value
+            exit
+        }
+    ' "$file"
+}
+
 # Insert the contents of a service-block file into docker-compose.yml,
 # right before the first top-level `volumes:` or `networks:` key (or at the
 # end of the file if there is neither).

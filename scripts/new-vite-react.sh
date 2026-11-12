@@ -1,12 +1,16 @@
 #!/bin/bash
 
 # Create a new Vite + React + TypeScript project using Vite's official scaffolder
-# Usage: ./new-vite-react.sh <project-name>
+# Usage: ./new-vite-react.sh <project-name> [--with-db]
 # Requires: Node.js and npm available on the host machine
 
 set -e
 
+source scripts/lib/project.sh
+source scripts/lib/compose.sh
+
 APP_NAME=$1
+WITH_DB=$2
 APP_DIR="apps/$APP_NAME"
 
 # Colors
@@ -31,8 +35,8 @@ echo ""
 # ============================================
 # STEP 0: Check if app exists in docker-compose
 # ============================================
-SAFE_NAME=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
-if grep -q "^  $SAFE_NAME:" docker-compose.yml; then
+SAFE_NAME=$(to_safe_name "$APP_NAME")
+if project_service_exists "$SAFE_NAME"; then
     echo -e "${YELLOW}⚠️  Project already in docker-compose.yml${NC}"
     IN_COMPOSE=true
 else
@@ -81,22 +85,22 @@ else
 fi
 
 # ============================================
-# STEP 3: Copy Dockerfile from template
+# STEP 3: Copy Dockerfile (shared Node image)
 # ============================================
 if [ -f "$APP_DIR/Dockerfile" ]; then
     echo -e "${YELLOW}⚠️  Dockerfile already exists${NC}"
 else
-    cp scripts/templates/vite/Dockerfile "$APP_DIR/Dockerfile"
+    cp scripts/templates/stacks/node/Dockerfile "$APP_DIR/Dockerfile"
     echo -e "${GREEN}✅ Created Dockerfile${NC}"
 fi
 
 # ============================================
-# STEP 4: Copy .dockerignore from template
+# STEP 4: Copy .dockerignore
 # ============================================
 if [ -f "$APP_DIR/.dockerignore" ]; then
     echo -e "${YELLOW}⚠️  .dockerignore already exists${NC}"
 else
-    cp scripts/templates/vite/.dockerignore "$APP_DIR/.dockerignore"
+    cp scripts/templates/stacks/node/.dockerignore "$APP_DIR/.dockerignore"
     echo -e "${GREEN}✅ Created .dockerignore${NC}"
 fi
 
@@ -104,7 +108,14 @@ fi
 # STEP 5: Add to docker-compose.yml
 # ============================================
 if [ "$IN_COMPOSE" = false ]; then
-    ./scripts/add-to-compose-vite.sh "$APP_NAME"
+    ./scripts/add-to-compose.sh "$APP_NAME" vite "$WITH_DB"
+fi
+
+# With --with-db, create the database and user the DB_* env vars point to
+if [ "$WITH_DB" = "--with-db" ]; then
+    SAFE_DB=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
+    echo ""
+    ./scripts/create-db.sh "$SAFE_DB"
 fi
 
 # ============================================

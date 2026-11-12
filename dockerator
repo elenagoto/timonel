@@ -108,34 +108,43 @@ fi
 case $COMMAND in
     new)
         if [ $# -lt 3 ]; then
-            echo -e "${RED}Usage: dockerator new <type> <name>${NC}"
-            echo "  Types: nextjs, wp (wordpress coming soon)"
+            echo -e "${RED}Usage: dockerator new <type> <name> [--with-db]${NC}"
+            echo "  Types: nextjs, vite, parcel, wp"
             exit 1
         fi
-        
+
         PROJECT_TYPE=$2
         PROJECT_NAME=$3
+        WITH_DB=${4-}
 
-        
+        # Only one optional flag exists; anything else is a typo, not ignored
+        if [ $# -gt 4 ] || { [ -n "$WITH_DB" ] && [ "$WITH_DB" != "--with-db" ]; }; then
+            echo -e "${RED}Unknown option: ${*:4}${NC}"
+            echo "  Usage: dockerator new <type> <name> [--with-db]"
+            exit 1
+        fi
+
         case $PROJECT_TYPE in
             nextjs)
-                ./scripts/new-nextjs.sh "$PROJECT_NAME" "$4"
+                ./scripts/new-nextjs.sh "$PROJECT_NAME" "$WITH_DB"
                 ;;
             wp)
+                if [ -n "$WITH_DB" ]; then
+                    echo -e "${YELLOW}ℹ️  WordPress always gets a database; --with-db isn't needed${NC}"
+                fi
                 ./scripts/new-wordpress.sh "$PROJECT_NAME"
                 ;;
             vite)
-                ./scripts/new-vite-react.sh "$PROJECT_NAME"
+                ./scripts/new-vite-react.sh "$PROJECT_NAME" "$WITH_DB"
                 ;;
             parcel)
-                ./scripts/new-parcel.sh "$PROJECT_NAME"
+                ./scripts/new-parcel.sh "$PROJECT_NAME" "$WITH_DB"
                 ;;
             *)
                 echo -e "${RED}Unknown project type: $PROJECT_TYPE${NC}"
-                echo "Available types: nextjs, wp, vite"
+                echo "Available types: nextjs, vite, parcel, wp"
                 exit 1
                 ;;
-            
         esac
         ;;
     remove)

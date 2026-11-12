@@ -13,7 +13,7 @@ Inspired by [devner](https://github.com/MarJC5/devner).
 - 🚀 **One-command project creation** - `dockerator new nextjs|wp|vite <name>`
 - 📘 **TypeScript by default** - New Next.js projects scaffold as TypeScript (strict mode), not JavaScript
 - 🗄️ **Shared services** - MySQL, Adminer, Mailpit across all projects
-- 🔌 **Opt-in DB wiring** - `--with-db` flag connects Next.js projects to MySQL on demand
+- 🔌 **Opt-in DB wiring** - `--with-db` flag connects Next.js, Vite and Parcel projects to MySQL on demand
 - 🔄 **Hot reload** - Changes reflect immediately (Vite + Next.js)
 - 🌐 **Clean URLs** - `project-name.localhost` for each project
 - 🔐 **Auto /etc/hosts sync** - No manual editing
@@ -214,17 +214,10 @@ dockerator/
 ├── dockerator-completion.zsh       # Zsh autocomplete
 ├── scripts/
 │   ├── templates/                  # Project templates
-│   │   ├── nextjs/
-│   │   │   ├── .dockerignore
-│   │   │   ├── .gitkeep
-│   │   │   ├── Dockerfile
-│   │   │   ├── tsconfig.json
-│   │   │   ├── page.tsx
-│   │   │   └── layout.tsx
+│   │   ├── stacks/node/            # Shared Dockerfile + .dockerignore for every Node project
+│   │   ├── nextjs/                 # Next.js starter files (package.json, tsconfig.json, page.tsx, layout.tsx...)
 │   │   ├── parcel/                 # Parcel + React starter files
-│   │   ├── vite/
-│   │   │   ├── .dockerignore
-│   │   │   └── Dockerfile
+│   │   ├── vite/                   # (scaffolded by Vite's own tool)
 │   │   └── wordpress/
 │   │       ├── .gitkeep
 │   │       ├── Caddyfile
@@ -232,10 +225,10 @@ dockerator/
 │   │       ├── dockerator-mailpit.php  # Must-use plugin: WordPress mail -> Mailpit
 │   │       └── wp-config.php.template
 │   ├── lib/
+│   │   ├── compose.sh              # Read/edit docker-compose.yml (insert, list projects, labels)
+│   │   ├── frameworks.sh           # Per-framework settings: port, cache volumes, dev flags
 │   │   └── project.sh              # Shared helpers: name validation, folder lookup
-│   ├── add-to-compose-nextjs.sh    # Add NextJS project to compose
-│   ├── add-to-compose-parcel.sh    # Add Parcel project to compose
-│   ├── add-to-compose-vite.sh      # Add Vite project to compose
+│   ├── add-to-compose.sh           # Add a Node project (Next.js, Vite, Parcel) to compose
 │   ├── add-to-compose-wp.sh        # Add WordPress to compose
 │   ├── create-db.sh                # Create a MySQL database + user (starts MySQL if needed)
 │   ├── dev-mode-frontend.sh        # Enter Next.js/Vite dev mode

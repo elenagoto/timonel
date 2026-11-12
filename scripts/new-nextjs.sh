@@ -6,6 +6,9 @@
 
 set -e
 
+source scripts/lib/project.sh
+source scripts/lib/compose.sh
+
 APP_NAME=$1
 WITH_DB=$2
 APP_DIR="apps/$APP_NAME"
@@ -27,8 +30,8 @@ echo ""
 # ============================================
 # STEP 0: Check if app exists in docker-compose
 # ============================================
-SAFE_NAME=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
-if grep -q "^  $SAFE_NAME:" docker-compose.yml; then
+SAFE_NAME=$(to_safe_name "$APP_NAME")
+if project_service_exists "$SAFE_NAME"; then
     echo -e "${YELLOW}⚠️  Project already in docker-compose.yml${NC}"
     IN_COMPOSE=true
 else
@@ -57,10 +60,10 @@ else
 fi
 
 # ============================================
-# STEP 3: Create Dockerfile
+# STEP 3: Create Dockerfile (shared Node image)
 # ============================================
 if [ ! -f "$APP_DIR/Dockerfile" ]; then
-   cp scripts/templates/nextjs/Dockerfile "$APP_DIR/"
+    cp scripts/templates/stacks/node/Dockerfile "$APP_DIR/"
     echo -e "${GREEN}✅ Created Dockerfile${NC}"
 else
     echo -e "${YELLOW}⚠️  Dockerfile already exists${NC}"
@@ -69,13 +72,11 @@ fi
 # ============================================
 # STEP 4: Create .dockerignore
 # ============================================
-
-if [ ! -f "$APP_DIR/.dockerignore" ]; then  
-    cp scripts/templates/nextjs/.dockerignore "$APP_DIR/"
+if [ ! -f "$APP_DIR/.dockerignore" ]; then
+    cp scripts/templates/stacks/node/.dockerignore "$APP_DIR/"
     echo -e "${GREEN}✅ Created .dockerignore${NC}"
 else
-   echo -e "${YELLOW}⚠️  .dockerignore already exists${NC}"
-    
+    echo -e "${YELLOW}⚠️  .dockerignore already exists${NC}"
 fi
 
 # ============================================
@@ -103,7 +104,7 @@ fi
 # STEP 6: Add to docker-compose.yml
 # ============================================
 if [ "$IN_COMPOSE" = false ]; then
-    ./scripts/add-to-compose-nextjs.sh "$APP_NAME" "$WITH_DB"
+    ./scripts/add-to-compose.sh "$APP_NAME" next "$WITH_DB"
 fi
 
 # With --with-db, the container gets DB_* env vars, so the database and user
