@@ -121,15 +121,16 @@ timonel history [--errors]                # command log (phase 4)
 - [x] Replace the remaining `grep "^  name:"` checks with `project_service_exists` (start, stop, restart, remove, remove-from-compose). None left.
 - [x] `remove` cleanup *(audit)*: asks first, then deletes the container with its anonymous volumes (`rm -fsv`) and the built image; **asks** whether to delete the project's database and user (`drop-db.sh`, default: keep); points to `dockerator hosts` instead of `/etc/hosts` with nano
 - [x] Verify `down` and `logs` include project containers (`projects` profile). Docs say plain `down` skips profiled services, but Compose 5.7 includes them; `--profile projects` added to both so every version behaves the same. `logs <name>` also accepts the folder form (`my_app`).
-- [ ] **Laravel**:
-  - [ ] `new laravel <name>`: `composer create-project laravel/laravel` in a temporary container
-  - [ ] `--kit react|vue|livewire`: create from Laravel's starter kit instead (check which version `laravel new` installs: the kits' tagged releases date from Feb 2025)
-  - [ ] Write `.env` (MySQL instead of the SQLite default, Mailpit, `APP_URL=http://<name>.localhost`), then `key:generate` and `migrate`
-  - [ ] Database via `create-db.sh` (always, like WordPress)
-  - [ ] `add` detects Laravel and fills in a missing `.env` from `.env.example` with the same settings
-  - [ ] `dev`: shell at `/app` with `php artisan` available; Vite via `laravel-vite-plugin` on 5173 (needs `server.host` + `hmr.host` set for Docker)
-  - [ ] `restart` runs `composer install` + `npm install`
-  - [ ] Check that `storage/` and `bootstrap/cache` are writable through the bind mount (fine on macOS; can need a fix on Linux)
+- [x] **Laravel**:
+  - [x] `new laravel <name>`: `composer create-project laravel/laravel` in a temporary `composer:2` container, as the user (`new-laravel.sh`)
+  - [x] `--kit react|vue|svelte|livewire` (Svelte was added to Laravel's kits since the decision): `laravel/<kit>-starter-kit` with `--stability=dev`, which is what `laravel new` installs (current `dev-main`, Laravel 13; the tagged releases are old)
+  - [x] Write `.env` (MySQL instead of the SQLite default, Mailpit, `APP_URL=http://<name>.localhost`), then `key:generate` and `migrate` (`lib/laravel.sh`, `setup-laravel.sh` in a one-off container of the project image)
+  - [x] Database via `create-db.sh` (always, like WordPress)
+  - [x] `add` detects Laravel and fills in a missing `.env` from `.env.example` with the same settings; installs what's missing; prints (doesn't apply) the Vite setting
+  - [x] `dev`: shell at `/app` with `php artisan` available; Vite patched for Docker (`host 0.0.0.0`, `hmr.host localhost`, per Laravel's Sail docs) and reached on 5173
+  - [x] `restart` re-runs `composer install` + `npm install` + build (and no longer rebuilds the PHP image, which holds no project deps)
+  - [x] `storage/` writable through the bind mount (checked on macOS). On Linux, files are created as your user (`--user`), so it should hold there too, but it's untested on Linux.
+  - Verified end to end (isolated scratch stack): plain project and React kit served (HTTP 200, login page for the kit), migrations in MySQL, files owned by the user; Vite dev server reachable from the Mac with CORS for `*.localhost`; `add` on a downloaded repo (no `.env`/`vendor`/`node_modules`) → served in 17 s; `restart`; re-running `add`
   - [ ] Out of scope for now: queue worker, scheduler, Octane
 
 ## Phase 3: Rename to timonel and fresh setup

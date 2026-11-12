@@ -73,7 +73,7 @@ Every project runs on one of two shared setups. The framework only decides a few
 | Stack | Frameworks | Image | Dev server port |
 | --- | --- | --- | --- |
 | **node** | Next.js, Vite, Parcel | `node:24-alpine` (`scripts/templates/stacks/node/`) | Next.js 3000, Vite 5173, Parcel 1234 |
-| **php** | WordPress (Laravel coming) | FrankenPHP 1.x, PHP 8.4, Composer, Node 24 (`scripts/templates/stacks/php/`) | 80 (+ 5173 for Vite while `dev` is open) |
+| **php** | WordPress, Laravel | FrankenPHP 1.x, PHP 8.4, Composer, Node 24 (`scripts/templates/stacks/php/`) | 80 (+ 5173 for Vite while `dev` is open) |
 
 Each project's block in `docker-compose.yml` is labelled with its stack and framework (`dockerator.stack`, `dockerator.framework`), which `list` and dev mode read.
 
@@ -152,6 +152,21 @@ dockerator start my-parcel
 
 A small **JavaScript** React starter built with Parcel: `public/index.html`, `src/`, `components/App/`, an `assets/` folder for static files, and Prettier (`npm run format`).
 
+#### Laravel Project
+
+```bash
+dockerator new laravel my-api                 # plain Laravel (Blade + Vite)
+dockerator new laravel my-app --kit react     # or vue, svelte, livewire
+dockerator start my-api
+# Visit: http://my-api.localhost
+```
+
+Creates the project with Composer inside a temporary container (no PHP or Composer needed on your machine). With `--kit`, you get one of Laravel's official starter kits (login, registration and a dashboard already built), from their current main branch, as Laravel's own installer does. Then Dockerator:
+
+- writes `.env` for the shared services: **MySQL** (database `my_api`, instead of Laravel's SQLite default), **Mailpit** for mail, and `APP_URL=http://my-api.localhost`
+- sets up `vite.config` so Vite's dev server works inside Docker (hot reload on `localhost:5173`)
+- creates the database, generates the app key, runs the migrations, and builds the front-end assets
+
 ---
 
 ### 📥 Bringing In Existing Projects
@@ -192,9 +207,26 @@ dockerator dev my-site
 # When done: exit (port 5173 is released again)
 ```
 
-Port 5173 is only published while dev mode is open, so several WordPress projects can run at the same time — just one of them in dev mode at a time.
+Port 5173 is only published while dev mode is open, so several WordPress (and Laravel) projects can run at the same time — just one of them in dev mode at a time.
 
 **Your theme location:** `apps/my-site/wp-content/themes/my-site/`
+
+#### Laravel (with Vite)
+
+```bash
+# Enter dev mode (also publishes port 5173 for Vite HMR)
+dockerator dev my-api
+
+# Inside container (you start in /app):
+  php artisan <command>  - Artisan (migrate, make:model, tinker...)
+  composer install       - Install PHP dependencies
+  npm run dev            - Start Vite dev server (hot reload at localhost:5173)
+  npm run build          - Build assets for production
+
+# When done: exit (port 5173 is released again)
+```
+
+The page keeps working without `npm run dev` (it uses the built assets); while it runs, Laravel switches to the dev server automatically.
 
 #### Next.js / Vite / Parcel
 
@@ -228,7 +260,7 @@ dockerator list            # List all projects with status
 dockerator open <name>     # Open project in VS Code
 dockerator start <name>    # Start project
 dockerator stop <name>     # Stop project
-dockerator restart <name>  # Restart with a full dependency reinstall (node_modules included)
+dockerator restart <name>  # Restart and reinstall dependencies (Node: fresh node_modules; Laravel: composer + npm install)
 dockerator logs <name>     # View logs
 dockerator remove <name>   # Remove project completely (container, its volumes and image, folder; asks before deleting its database)
 dockerator hosts           # Sync /etc/hosts
@@ -260,6 +292,7 @@ dockerator/
 │   ├── lib/
 │   │   ├── compose.sh              # Read/edit docker-compose.yml (insert, list projects, labels)
 │   │   ├── frameworks.sh           # Per-framework settings: stack, port, volumes, dev flags, web root
+│   │   ├── laravel.sh              # Laravel .env and Vite helpers
 │   │   └── project.sh              # Shared helpers: name validation, folder lookup
 │   ├── add-project.sh              # `add` command: dockerize an existing project in apps/
 │   ├── add-to-compose.sh           # Add any project (Next.js, Vite, Parcel, WordPress) to compose
@@ -270,6 +303,7 @@ dockerator/
 │   ├── dev-project.sh              # `dev` command: picks the right dev mode for the project
 │   ├── list-projects.sh            # List all projects
 │   ├── new-nextjs.sh               # Create Next.js project
+│   ├── new-laravel.sh              # Create Laravel project (plain or --kit)
 │   ├── new-parcel.sh               # Create Parcel project
 │   ├── new-vite-react.sh           # Create Vite React project
 │   ├── new-wordpress.sh            # Create WordPress project
@@ -277,6 +311,7 @@ dockerator/
 │   ├── remove-from-compose.sh      # Remove project from compose
 │   ├── remove-project.sh           # Delete project completely
 │   ├── restart-project.sh          # Restart a project, reinstalling dependencies
+│   ├── setup-laravel.sh            # Laravel: composer/npm install, key, migrations (one-off container)
 │   ├── start-project.sh            # Start a project
 │   ├── stop-project.sh             # Stop a project
 │   └── sync-hosts.sh               # Sync /etc/hosts file

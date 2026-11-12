@@ -3,18 +3,22 @@
 # Restart a project with a full dependency reinstall
 # Usage: ./restart-project.sh <project-name>
 #
-# A plain `docker-compose restart` (or even `up --build`) does NOT reinstall
-# npm dependencies: node_modules lives in an anonymous volume that Compose
-# reuses across restarts by default. This rebuilds the image without cache
-# and discards that anonymous volume so `npm install` actually runs again.
-# (Scope: meaningful for nextjs/vite/parcel projects; WordPress theme deps
-# aren't affected since they don't use this volume pattern.)
+# Node projects: a plain `docker-compose restart` (or even `up --build`)
+# does NOT reinstall npm dependencies: node_modules lives in an anonymous
+# volume that Compose reuses across restarts by default. This rebuilds the
+# image without cache and discards that anonymous volume so `npm install`
+# actually runs again.
+# PHP projects: the image holds no project dependencies (vendor/ and
+# node_modules/ live in the project folder), so the container is only
+# recreated; Laravel then reinstalls Composer + npm packages and rebuilds
+# its assets.
 
 set -e
 
 PROJECT_NAME=$1
 source scripts/lib/project.sh
 source scripts/lib/compose.sh
+source scripts/lib/frameworks.sh
 
 SAFE_URL=$(to_safe_name "$PROJECT_NAME")
 
@@ -36,19 +40,34 @@ if ! project_service_exists "$SAFE_URL"; then
     exit 1
 fi
 
+FRAMEWORK=$(project_framework "$PROJECT_NAME" || true)
+STACK=$(framework_setting "$FRAMEWORK" stack 2>/dev/null || echo "node")
+
 echo -e "${BLUE}🔄 Restarting $PROJECT_NAME with a full dependency reinstall...${NC}"
 echo ""
 
-# STEP 1: Rebuild without cache, so RUN npm install runs from scratch
-echo -e "${BLUE}📦 Rebuilding image (no cache)...${NC}"
-docker-compose build --no-cache "$SAFE_URL"
-echo -e "${GREEN}✅ Image rebuilt${NC}"
+if [ "$STACK" = "php" ]; then
+    # The PHP image has nothing project-specific to rebuild
+    echo -e "${BLUE}🔁 Recreating container...${NC}"
+    docker-compose --profile projects up -d --force-recreate "$SAFE_URL"
+    echo -e "${GREEN}✅ Container recreated${NC}"
 
-# STEP 2: Recreate the container AND discard its anonymous volumes
-# --renew-anon-volumes is what actually drops the stale node_modules
-echo -e "${BLUE}🔁 Recreating container with fresh volumes...${NC}"
-docker-compose --profile projects up -d --force-recreate --renew-anon-volumes "$SAFE_URL"
-echo -e "${GREEN}✅ Container recreated${NC}"
+    if [ "$FRAMEWORK" = "laravel" ]; then
+        echo ""
+        ./scripts/setup-laravel.sh "$PROJECT_NAME" --reinstall
+    fi
+else
+    # STEP 1: Rebuild without cache, so RUN npm install runs from scratch
+    echo -e "${BLUE}📦 Rebuilding image (no cache)...${NC}"
+    docker-compose build --no-cache "$SAFE_URL"
+    echo -e "${GREEN}✅ Image rebuilt${NC}"
+
+    # STEP 2: Recreate the container AND discard its anonymous volumes
+    # --renew-anon-volumes is what actually drops the stale node_modules
+    echo -e "${BLUE}🔁 Recreating container with fresh volumes...${NC}"
+    docker-compose --profile projects up -d --force-recreate --renew-anon-volumes "$SAFE_URL"
+    echo -e "${GREEN}✅ Container recreated${NC}"
+fi
 
 echo ""
 echo -e "${GREEN}🎉 $PROJECT_NAME restarted, dependencies reinstalled${NC}"

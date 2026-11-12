@@ -18,6 +18,7 @@ set -e
 source scripts/lib/project.sh
 source scripts/lib/compose.sh
 source scripts/lib/frameworks.sh
+source scripts/lib/laravel.sh
 
 APP_NAME=$1
 WITH_DB=$2
@@ -147,6 +148,27 @@ if [ "$FRAMEWORK" = "wordpress" ]; then
     fi
 fi
 
+LARAVEL_ENV_CREATED=false
+if [ "$FRAMEWORK" = "laravel" ]; then
+    # .env is local config (not committed), so creating a missing one is fine;
+    # an existing one is never edited, only checked
+    if [ "$(laravel_create_env "$APP_DIR" "$SAFE_NAME" "$SAFE_DB")" = "created" ]; then
+        LARAVEL_ENV_CREATED=true
+        echo -e "${GREEN}✅ Created .env from .env.example (MySQL, Mailpit, APP_URL=http://$SAFE_NAME.localhost)${NC}"
+    elif ! grep -qE "^DB_HOST=mysql[[:space:]]*$" "$APP_DIR/.env" 2>/dev/null; then
+        echo -e "${YELLOW}⚠️  .env doesn't use the shared MySQL server. Set:${NC}"
+        echo "   DB_CONNECTION=mysql DB_HOST=mysql DB_DATABASE=$SAFE_DB DB_USERNAME=$SAFE_DB DB_PASSWORD=$SAFE_DB"
+    fi
+
+    # vite.config is app code: point out the Docker setting instead of editing it
+    for VITE_FILE in "$APP_DIR/vite.config.ts" "$APP_DIR/vite.config.js"; do
+        if [ -f "$VITE_FILE" ] && ! grep -q "hmr" "$VITE_FILE"; then
+            echo -e "${YELLOW}⚠️  For hot reload inside Docker, add to $(basename "$VITE_FILE") (in defineConfig):${NC}"
+            echo "   server: { host: \"0.0.0.0\", port: 5173, strictPort: true, hmr: { host: \"localhost\" } },"
+        fi
+    done
+fi
+
 # ============================================
 # STEP 4: Database (PHP: always; Node: with --with-db)
 # ============================================
@@ -163,6 +185,19 @@ if [ "$ALREADY_REGISTERED" = true ]; then
     echo -e "${YELLOW}⚠️  Already in docker-compose.yml, not changed${NC}"
 else
     ./scripts/add-to-compose.sh "$APP_NAME" "$FRAMEWORK" "$WITH_DB"
+fi
+
+# ============================================
+# STEP 6: Laravel: install what's missing (vendor, key, front-end build);
+# migrate only a database this run just wired up
+# ============================================
+if [ "$FRAMEWORK" = "laravel" ]; then
+    echo ""
+    if [ "$LARAVEL_ENV_CREATED" = true ]; then
+        ./scripts/setup-laravel.sh "$APP_NAME" --migrate
+    else
+        ./scripts/setup-laravel.sh "$APP_NAME"
+    fi
 fi
 
 echo ""
