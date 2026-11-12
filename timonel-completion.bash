@@ -9,7 +9,7 @@ _timonel_completions() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     
     # Main commands
-    commands="new add open list up down logs remove start stop restart dev hosts help"
+    commands="new add open list up down logs remove start stop restart dev hosts history help"
     
     # Get projects from docker-compose.yml
     if [ -f "$HOME/.timonel-path" ]; then
@@ -28,6 +28,10 @@ _timonel_completions() {
     case "${prev}" in
         timonel)
             COMPREPLY=($(compgen -W "${commands}" -- ${cur}))
+            return 0
+            ;;
+        history)
+            COMPREPLY=($(compgen -W "--errors" -- ${cur}))
             return 0
             ;;
         new)

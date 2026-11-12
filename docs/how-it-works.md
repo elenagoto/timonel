@@ -65,6 +65,7 @@ The `timonel` file is only a dispatcher: it checks the arguments, then runs one 
 | `dev` | `dev-project.sh` → `dev-mode-node.sh` or `dev-mode-php.sh` |
 | `start`, `stop`, `restart` | `start-project.sh`, `stop-project.sh`, `restart-project.sh` |
 | `list`, `open`, `remove`, `hosts` | `list-projects.sh`, `open-project.sh`, `remove-project.sh`, `sync-hosts.sh` |
+| `history` | `show-history.sh` |
 
 Helpers used by several scripts:
 
@@ -76,6 +77,20 @@ Helpers used by several scripts:
 | `lib/laravel.sh` | Writing Laravel's `.env` and preparing `vite.config` for Docker |
 
 New projects are created **inside containers**, so the host needs nothing but Docker: Vite's scaffolder runs in `node:24-alpine`, Laravel's `composer create-project` in `composer:2`, both as your own user so the files belong to you.
+
+## The command log
+
+The dispatcher records every command in `logs/timonel.log` (git-ignored). On the first call it runs itself again with `TIMONEL_LOGGED=1`, piping the output through `tee` so it still reaches the terminal, and appends to the log:
+
+```text
+=== 2026-11-12 10:26:49  timonel remove my-app
+<the command's output, colours and the banner removed>
+--- exit 0 in 2s                       (or: --- interrupted (exit 130) after 4s)
+```
+
+`dev` and `logs` are interactive or never end, so they run directly and only get the `===` and `---` lines. The log is trimmed to its last 5,000 lines after every command. `scripts/show-history.sh` reads it for `timonel history`.
+
+One side effect: because a command's output goes through a pipe, Docker prints plain progress lines instead of its animated display.
 
 ## Repository layout
 
@@ -96,6 +111,7 @@ timonel/
 │   │   └── wordpress/          # wp-config template, Mailpit must-use plugin
 │   ├── lib/                    # shared helpers (compose, frameworks, project, laravel)
 │   └── *.sh                    # one script per command or task
+├── logs/                       # command log, timonel.log (git-ignored)
 └── apps/                       # your projects (git-ignored)
 ```
 

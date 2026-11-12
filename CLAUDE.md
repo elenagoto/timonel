@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Timonel (formerly **Dockerator**; renamed in November 2026) is a bash CLI tool (not an app you build/test) that orchestrates Docker Compose to manage multiple local dev projects (Next.js, Vite+React, Parcel on a shared Node stack; WordPress and Laravel on a shared PHP stack) behind Traefik, with shared MySQL/Adminer/Mailpit services and automatic `*.localhost` domain routing. The repo itself is the tool; `apps/` (git-ignored) holds the projects it scaffolds and manages.
 
-**Redesign status:** the restructure (node/php stacks, `new` vs `add`, a single `dev`, Laravel) and the rename to **timonel** are complete, including the local folder (`~/projects/timonel`) and the GitHub repo (`elenagoto/timonel`; the old `elenagoto/dockerator` URL redirects — never create a new repo with that name, or the redirect breaks). Still open: phase 4 (command log). The plan and progress are in [ROADMAP.md](ROADMAP.md). Read it before starting work, and tick items off there.
+**Redesign status:** the restructure (node/php stacks, `new` vs `add`, a single `dev`, Laravel) and the rename to **timonel** are complete, including the local folder (`~/projects/timonel`) and the GitHub repo (`elenagoto/timonel`; the old `elenagoto/dockerator` URL redirects — never create a new repo with that name, or the redirect breaks). Phase 4 (command log, `timonel history`) is done too. The plan and progress are in [ROADMAP.md](ROADMAP.md). Read it before starting work, and tick items off there.
 
 ## Commands
 
@@ -23,6 +23,7 @@ timonel dev <name>               # dev shell in the project (scripts/dev-project
 timonel list                     # scripts/list-projects.sh
 timonel logs [name]              # docker compose logs -f
 timonel hosts                    # syncs *.localhost entries into /etc/hosts (needs sudo)
+timonel history [--errors]       # recent commands from logs/timonel.log (scripts/show-history.sh)
 timonel open <name>              # opens apps/<name> in VS Code
 timonel remove <name>            # asks (and whether to drop its DB, default keep), then removes container + anon volumes + image, compose block, apps/<name>
 ```
@@ -32,6 +33,8 @@ Manually testing a change to a `scripts/*.sh` file means running the correspondi
 ## Architecture
 
 **`timonel`** is a thin dispatcher: it resolves its own real path (so it works via symlink from `/usr/local/bin`), `cd`s there, and routes `timonel <command> ...` to a script in `scripts/`. Add new subcommands by adding a `case` branch here plus a new `scripts/<verb>-<noun>.sh`.
+
+**Command log.** The top of `timonel` records every command except `help`/`history` in `logs/timonel.log` (git-ignored): it re-runs itself with `TIMONEL_LOGGED=1`, piping output through `tee`, then appends the output with colours, `\r`, the banner and leading blank lines stripped (perl), framed by `=== <date> <time>  timonel <args>` and `--- exit <code> in <s>s` / `--- interrupted (exit <code>) after <s>s` (a `trap INT`). `dev` and `logs` run directly (start/end lines only; Ctrl+C there is normal use, not an interruption). Trimmed to 5,000 lines after each run. Scripts therefore see stdout as a pipe, not a TTY, unless `TIMONEL_LOGGED` was preset; prompts still work (stdin is the terminal). `scripts/show-history.sh` parses the log (tolerating a trimmed first record).
 
 **`docker-compose.yml` is generated, not hand-edited.** `docker-compose.yml.example` is the checked-in template (defines `traefik`, `mysql`, `adminer`, `mailpit`, and `name: timonel`, so volumes and images are named `timonel_…` / `timonel-…` whatever the repo folder is called); `docker-compose.yml` itself is git-ignored and is mutated in place by `add-to-compose.sh` and `remove-from-compose.sh`, which splice per-project service blocks in with `insert_service_block` from `scripts/lib/compose.sh` (before the first top-level `volumes:`/`networks:` key). Read project services with `list_project_services` / `project_service_exists` / `service_label` from the same file, not `grep "^  name:"` (that also matches network and volume keys). Never hand-edit `docker-compose.yml` — edit `.example` for template changes, or fix the generating script for structural changes.
 

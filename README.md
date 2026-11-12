@@ -20,6 +20,7 @@
 - 🐳 **Only Docker needed**: no Node.js, npm, PHP or Composer on your machine; even the scaffolders run in containers
 - 🗄️ **Shared services**: MySQL, Adminer and Mailpit for every project; databases set up automatically for WordPress and Laravel
 - 🔄 **Hot reload** everywhere, including Vite in WordPress themes and Laravel
+- 📜 **Command log**: `timonel history` shows what you ran and why something failed
 - ⚡ **Tab completion** for commands and project names
 
 ## Quick start

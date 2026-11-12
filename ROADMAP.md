@@ -157,12 +157,13 @@ timonel history [--errors]                # command log (phase 4)
   - Update the CV link for future applications (old copies keep working via the redirect).
 - [x] `hosts` becomes optional: drop the "run `hosts`" reminders and `/etc/hosts` checks from `new`/`add`/`remove`; README explains when it's needed — done: reminders removed from the four `new-*` scripts (one closing hint instead); README explains when it is needed; also fixed the Quick Start (`cd timonel` after cloning `dockerator.git`)
 
-## Phase 4: Command log
+## Phase 4: Command log (done 2026-11-12)
 
-- [ ] Each run appends timestamp, command and exit code to `logs/timonel.log` (already git-ignored)
-- [ ] Full output (colours stripped) for non-interactive commands; start/exit lines only for `dev` and `logs`
-- [ ] Size cap (e.g. last ~5,000 lines)
-- [ ] `timonel history` and `timonel history --errors`
+- [x] Each run appends timestamp, command and exit code (plus duration) to `logs/timonel.log` (git-ignored); the dispatcher re-runs itself with `TIMONEL_LOGGED=1`, output through `tee`
+- [x] Full output (colours, banner and leading blank lines stripped) for non-interactive commands; start/exit lines only for `dev` and `logs`; `help`/`history` not logged; Ctrl+C recorded as interrupted (not for `dev`/`logs`, where it's normal use)
+- [x] Size cap: last 5,000 lines, trimmed after every run
+- [x] `timonel history` (last 20 runs: ✓/✗/⏹/…, duration) and `timonel history --errors` (last 5 failed runs with their output); completions; docs (commands, troubleshooting, how it works)
+- Verified: exit codes kept; colours on screen but not in the log; prompts work under a real terminal (typed answers behave the same with logging on and off); output ending without a newline doesn't swallow the end line; cap at exactly 5,000 lines and `history` still correct after trimming; Ctrl+C on a slow `start` → "interrupted after 4s" / ⏹
 
 ## Docs (alongside each phase)
 
@@ -182,7 +183,7 @@ Decisions: a `docs/` folder in the repo (versioned with the code), published as 
 - [x] README: 518 → 60 lines (identity, features, quick start, docs table, contributing, license)
 - [x] `.github/workflows/docs.yml`: Zensical's official Pages workflow, `main` only, Zensical pinned, docs paths only
 - [x] CLAUDE.md: "Documentation" section (update `docs/` with behaviour changes; page conventions; build check)
-- [ ] Turn on GitHub Pages (Settings → Pages → Source: GitHub Actions), push, check <https://elenagoto.github.io/timonel/>
+- [x] GitHub Pages switched on (source: GitHub Actions, via `gh api`); first workflow run 43190713310 succeeded; all 9 pages, search and cross-page anchors checked live at <https://elenagoto.github.io/timonel/>
 - [ ] Later: bump Zensical (pinned in the workflow) once past 0.1.x; consider `actions/setup-python@v7` (the workflow uses v6, as in Zensical's docs)
 
 ## Dropped

@@ -2,6 +2,17 @@
 
 [Documentation](README.md) › Troubleshooting
 
+## First: what did the command say?
+
+If a command failed earlier and its output is gone from your terminal, Timonel kept a copy:
+
+```bash
+timonel history            # the last 20 commands, ✓ or ✗
+timonel history --errors   # the last 5 failed ones, with their full output
+```
+
+See [the command log](commands.md#the-command-log).
+
 ## A project doesn't open at `http://<name>.localhost`
 
 1. Is it running? `timonel list` shows each project's status; start it with `timonel start <name>`.

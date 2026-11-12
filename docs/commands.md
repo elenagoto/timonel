@@ -37,6 +37,8 @@ Wherever a command takes a project `<name>`, both forms work: the folder name (`
 | Command | What it does |
 | --- | --- |
 | `timonel hosts` | Write the project names into `/etc/hosts`, for Safari and tools that don't resolve `*.localhost` themselves. Asks for your password. See [Getting started](getting-started.md#do-i-need-timonel-hosts). |
+| `timonel history` | Show the last 20 commands you ran, with ✓ or ✗ and how long they took. See below. |
+| `timonel history --errors` | Show the last 5 failed commands, with everything they printed. |
 | `timonel help` | Show the command list. |
 
 ## Options
@@ -58,3 +60,14 @@ Wherever a command takes a project `<name>`, both forms work: the folder name (`
 If the project has a database, it also asks whether to delete it. Pressing Enter keeps it.
 
 > **Back up first** if the folder holds work you want to keep (commit and push it, or copy it elsewhere).
+
+## The command log
+
+Every `timonel` command is recorded in `logs/timonel.log`, inside the Timonel folder: when it ran, the full command, what it printed (without colours) and how it ended. `timonel history` and `timonel history --errors` read it for you.
+
+- `dev` and `logs` only record when they started and ended, not their output.
+- `help` and `history` aren't recorded.
+- A command stopped with `Ctrl+C` is shown as interrupted.
+- The log keeps the last 5,000 lines, so it never grows large.
+
+The log stays on your computer: it isn't part of the repository.

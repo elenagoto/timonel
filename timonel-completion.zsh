@@ -35,6 +35,7 @@ _timonel() {
         'restart:Restart with full dependency reinstall'
         'dev:Open a dev shell in a project'
         'hosts:Sync /etc/hosts'
+        'history:Recent commands (--errors: failed ones)'
         'help:Show help'
     )
 

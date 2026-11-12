@@ -24,6 +24,73 @@ if [ ! -x scripts/add-to-compose.sh ]; then
     chmod +x scripts/*.sh 2>/dev/null || true
 fi
 
+# ============================================
+# Command log (logs/timonel.log, git-ignored; read with `timonel history`)
+# ============================================
+# The first call re-runs this same script with TIMONEL_LOGGED=1 and records:
+#   === <date> <time>  timonel <args>      (start)
+#   <the command's output, colours removed> (not for dev/logs)
+#   --- exit <code> in <seconds>s           (end; "interrupted" on Ctrl+C)
+# `dev` (an interactive shell) and `logs` (follows forever) only get the
+# start and end lines, since copying their output would get in the way.
+LOG_FILE="$SCRIPT_DIR/logs/timonel.log"
+LOG_MAX_LINES=5000
+
+log_line() {
+    mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null && echo "$1" >> "$LOG_FILE" 2>/dev/null || true
+}
+
+# Keep only the last LOG_MAX_LINES lines
+trim_log() {
+    local lines tmp
+    [ -f "$LOG_FILE" ] || return 0
+    lines=$(wc -l < "$LOG_FILE")
+    if [ "$lines" -gt "$LOG_MAX_LINES" ]; then
+        tmp=$(mktemp)
+        tail -n "$LOG_MAX_LINES" "$LOG_FILE" > "$tmp" && cat "$tmp" > "$LOG_FILE"
+        rm -f "$tmp"
+    fi
+}
+
+if [ -z "${TIMONEL_LOGGED:-}" ] && [ $# -gt 0 ] && [ "$1" != "help" ] && [ "$1" != "history" ]; then
+    LOG_STARTED=$(date +%s)
+    INTERRUPTED=false
+    trap 'INTERRUPTED=true' INT
+    log_line "=== $(date '+%Y-%m-%d %H:%M:%S')  timonel $*"
+
+    case "$1" in
+        dev|logs)
+            # Interactive: keep the terminal, record start and end only.
+            # Ctrl+C is normal use here (stopping `npm run dev`, leaving
+            # `logs -f`), so it isn't recorded as an interruption.
+            TIMONEL_LOGGED=1 "$SCRIPT_DIR/timonel" "$@"
+            RC=$?
+            INTERRUPTED=false
+            ;;
+        *)
+            # Show the output as usual, and keep a copy for the log
+            OUTPUT=$(mktemp)
+            TIMONEL_LOGGED=1 "$SCRIPT_DIR/timonel" "$@" 2>&1 | tee "$OUTPUT"
+            RC=${PIPESTATUS[0]}
+            # Remove colour codes and carriage returns before saving
+            perl -pe 's/\e\[[0-9;?]*[A-Za-z]//g; s/\r//g; $_ = "" if /^(╔|║|╚)/; $s ||= /\S/; $_ = "" unless $s' "$OUTPUT" >> "$LOG_FILE" 2>/dev/null || true
+            rm -f "$OUTPUT"
+            # Output ending without a newline (e.g. a prompt) mustn't swallow the end line
+            if [ -s "$LOG_FILE" ] && [ -n "$(tail -c 1 "$LOG_FILE")" ]; then
+                echo >> "$LOG_FILE"
+            fi
+            ;;
+    esac
+
+    if [ "$INTERRUPTED" = true ]; then
+        log_line "--- interrupted (exit $RC) after $(( $(date +%s) - LOG_STARTED ))s"
+    else
+        log_line "--- exit $RC in $(( $(date +%s) - LOG_STARTED ))s"
+    fi
+    trim_log
+    exit "$RC"
+fi
+
 # Project-name helpers (validation, reserved names) and compose lookups
 source scripts/lib/project.sh
 source scripts/lib/compose.sh
@@ -68,6 +135,7 @@ show_menu() {
     echo ""
     echo "Other:"
     echo "  hosts                      Write the *.localhost names into /etc/hosts (sudo)"
+    echo "  history [--errors]         Recent commands (--errors: failed ones, with output)"
     echo "  help                       Show this menu"
     echo ""
 }
@@ -107,7 +175,7 @@ fi
 # Reject unexpected extra arguments instead of silently ignoring them
 # (`new` and `add` check their own optional --with-db flag)
 case $COMMAND in
-    remove|open|start|stop|restart|dev|logs) MAX_ARGS=2 ;;
+    remove|open|start|stop|restart|dev|logs|history) MAX_ARGS=2 ;;
     up|down|list|hosts|help)                 MAX_ARGS=1 ;;
     *)                                       MAX_ARGS="" ;;
 esac
@@ -243,6 +311,9 @@ case $COMMAND in
         ;;
     hosts)
         ./scripts/sync-hosts.sh
+        ;;
+    history)
+        ./scripts/show-history.sh "${2-}"
         ;;
     list)
         ./scripts/list-projects.sh
