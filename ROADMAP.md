@@ -151,7 +151,7 @@ timonel history [--errors]                # command log (phase 4)
   - **Rename** `elenagoto/dockerator` → `timonel` in GitHub's repo settings. GitHub then redirects the old URL (web pages and `git clone/pull/push`) to the new one, so the link already sent on CVs keeps working.
   - With the GitHub CLI (installed: gh 2.103.3): `gh auth login` (you, in the browser), then `gh repo rename timonel` from the repo folder. It is the same rename as in the settings (redirect kept) and also updates the local `origin` remote (currently `git@github.com:elenagoto/dockerator.git`). Claude asks for a go-ahead before running it.
   - **Never create a new repo named `dockerator`** on the account: GitHub drops the redirect when the old name is reused, and CV visitors would land on that repo instead.
-  - Add "Formerly known as Dockerator" near the top of the README, so visitors from the old link know they're in the right place.
+  - [x] Add "Formerly known as Dockerator" near the top of the README, so visitors from the old link know they're in the right place.
   - Update the CV link for future applications (old copies keep working via the redirect).
 - [x] `hosts` becomes optional: drop the "run `hosts`" reminders and `/etc/hosts` checks from `new`/`add`/`remove`; README explains when it's needed — done: reminders removed from the four `new-*` scripts (one closing hint instead); README explains when it is needed; also fixed the Quick Start (`cd timonel` after cloning `dockerator.git`)
 
@@ -167,8 +167,8 @@ timonel history [--errors]                # command log (phase 4)
 - [ ] Rewrite README around stacks, `new` vs `add`, and `dev`
   - [x] Phase 1: Stacks section; Vite and Parcel usage; features list includes Vite/Parcel *(audit)*; no longer points to a missing `example` environment block *(audit)*
   - [x] Phase 2: `new` vs `add` (Usage overview table), single `dev`, Laravel usage and dev mode, database info for PHP projects, `remove` behaviour, common mistake "`new` on a downloaded project"
-- [ ] Add an MIT `LICENSE` file (the README already links to it)
-- [ ] Update CLAUDE.md after each phase
+- [x] Add an MIT `LICENSE` file (Copyright 2025-2026 Laura Gomez); README badge now links to it, plus a platform badge (macOS | Linux)
+- [ ] Update CLAUDE.md after each phase (done through phase 3: "formerly Dockerator", redesign status)
 
 ## Dropped
 

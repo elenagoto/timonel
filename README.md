@@ -1,10 +1,13 @@
-# Timonel 🐳
+# Timonel 🧭
 
 > A Docker orchestration CLI tool for running many local projects side by side (Next.js, Vite, Parcel, WordPress, Laravel) with automatic routing and zero configuration. Create new projects, or drop in ones you downloaded.
 
-Inspired by devner by [MarJC5](https://github.com/MarJC5).
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Platforms: macOS and Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+**Formerly known as Dockerator.** *Timonel* is Spanish for *helmsman*: the one who steers the ship, as this tool steers your local projects. Old links to the Dockerator repository still lead here.
+
+Inspired by devner by [MarJC5](https://github.com/MarJC5).
 
 ---
 
@@ -59,11 +62,11 @@ timonel up
 
 ## 🌐 Access Services
 
-- 🎛️ **Traefik Dashboard**: http://localhost:8080 (this Mac only)
+- 🎛️ **Traefik Dashboard**: <http://localhost:8080> (this Mac only)
 - 🐬 **MySQL** for local tools (TablePlus, Sequel Ace...): `127.0.0.1:3306`, user `root`, password `timonel` (this Mac only)
-- 🗄️ **Adminer** (Database): http://timonel-adminer.localhost
+- 🗄️ **Adminer** (Database): <http://timonel-adminer.localhost>
   - Server: `mysql` | User: `root` | Pass: `timonel`
-- 📧 **Mailpit** (Email Testing): http://timonel-mailpit.localhost
+- 📧 **Mailpit** (Email Testing): <http://timonel-mailpit.localhost>
   - WordPress projects send all their mail here automatically (via a small `timonel-mailpit.php` must-use plugin), and so do Laravel projects (`MAIL_HOST=mailpit` in their `.env`)
   - Other apps: SMTP host `mailpit`, port `1025`, no auth/TLS (apps running outside Docker: `127.0.0.1:1025`)
 
@@ -283,14 +286,16 @@ Projects don't start with `timonel up`; start each one with `timonel start <name
 
 ## 📂 Project Structure
 
-```
+```text
 timonel/
-├── timonel                      # Main CLI script
+├── timonel                         # Main CLI script
 ├── install.sh                      # Installation script
 ├── docker-compose.yml              # Active config (git-ignored)
 ├── docker-compose.yml.example      # Template
-├── timonel-completion.bash      # Bash autocomplete
-├── timonel-completion.zsh       # Zsh autocomplete
+├── timonel-completion.bash         # Bash autocomplete
+├── timonel-completion.zsh          # Zsh autocomplete
+├── LICENSE                         # MIT
+├── ROADMAP.md                      # Redesign plan and progress
 ├── scripts/
 │   ├── templates/                  # Project templates
 │   │   ├── stacks/
@@ -300,7 +305,7 @@ timonel/
 │   │   ├── parcel/                 # Parcel + React starter files
 │   │   ├── vite/                   # (scaffolded by Vite's own tool)
 │   │   └── wordpress/
-│   │       ├── timonel-mailpit.php  # Must-use plugin: WordPress mail -> Mailpit
+│   │       ├── timonel-mailpit.php # Must-use plugin: WordPress mail -> Mailpit
 │   │       └── wp-config.php.template
 │   ├── lib/
 │   │   ├── compose.sh              # Read/edit docker-compose.yml (insert, list projects, labels)
@@ -355,7 +360,7 @@ Database wiring is **opt-in** via the `--with-db` flag on `new` or `add` — not
 - **Password**: `project_name`
 - **Host**: `mysql`
 
-Access all databases via Adminer: http://timonel-adminer.localhost
+Access all databases via Adminer: <http://timonel-adminer.localhost>
 
 `timonel remove` asks whether to delete a project's database too; pressing Enter keeps it.
 
@@ -508,6 +513,6 @@ MIT - see [LICENSE](LICENSE) file
 
 ---
 
-**Made with ❤️ for efficient local development**
+Made with ❤️ for efficient local development.
 
 If this project helped you, give it a ⭐️!

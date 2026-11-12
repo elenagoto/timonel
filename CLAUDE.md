@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Timonel is a bash CLI tool (not an app you build/test) that orchestrates Docker Compose to manage multiple local dev projects (Next.js, Vite+React, Parcel on a shared Node stack; WordPress and Laravel on a shared PHP stack) behind Traefik, with shared MySQL/Adminer/Mailpit services and automatic `*.localhost` domain routing. The repo itself is the tool; `apps/` (git-ignored) holds the projects it scaffolds and manages.
+Timonel (formerly **Dockerator**; renamed in November 2026) is a bash CLI tool (not an app you build/test) that orchestrates Docker Compose to manage multiple local dev projects (Next.js, Vite+React, Parcel on a shared Node stack; WordPress and Laravel on a shared PHP stack) behind Traefik, with shared MySQL/Adminer/Mailpit services and automatic `*.localhost` domain routing. The repo itself is the tool; `apps/` (git-ignored) holds the projects it scaffolds and manages.
 
-**Ongoing redesign:** the tool is being restructured (node/php stacks, `new` vs `add`, a single `dev`) and renamed to **timonel**. The plan and progress are in [ROADMAP.md](ROADMAP.md). Read it before starting work, and tick items off there.
+**Redesign status:** the restructure (node/php stacks, `new` vs `add`, a single `dev`, Laravel) and the rename to **timonel** are done in code. Still open: renaming the GitHub repo and local folder (then the README's clone/issue URLs, which deliberately still say `dockerator`), and phase 4 (command log). The plan and progress are in [ROADMAP.md](ROADMAP.md). Read it before starting work, and tick items off there.
 
 ## Commands
 
