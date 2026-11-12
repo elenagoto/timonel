@@ -28,7 +28,6 @@ Inspired by [devner](https://github.com/MarJC5/devner).
 - **Docker Desktop** installed and running ([Download](https://www.docker.com/products/docker-desktop))
 - **macOS** or **Linux**
 - Basic terminal knowledge
-- **Node.js & npm** installed (for Vite project scaffolding) ([Download](https://nodejs.org/))
 
 ```bash
 # Verify Docker is running

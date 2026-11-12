@@ -2,7 +2,8 @@
 
 # Create a new Vite + React + TypeScript project using Vite's official scaffolder
 # Usage: ./new-vite-react.sh <project-name> [--with-db]
-# Requires: Node.js and npm available on the host machine
+# The scaffolder runs inside a throwaway Node container, so Node.js/npm
+# don't need to be installed on your machine (only Docker).
 
 set -e
 
@@ -24,11 +25,6 @@ if [ -z "$APP_NAME" ]; then
     exit 1
 fi
 
-if ! command -v npm &> /dev/null; then
-    echo "❌ Error: npm is required but not found. Please install Node.js first."
-    exit 1
-fi
-
 echo -e "${BLUE}Creating Vite + React + TypeScript project: $APP_NAME${NC}"
 echo ""
 
@@ -43,16 +39,24 @@ else
     IN_COMPOSE=false
 fi
 
-
-
 # ============================================
-# STEP 1: Scaffold project with Vite
+# STEP 1: Scaffold project with Vite (inside a throwaway container)
 # ============================================
 if [ -d "$APP_DIR" ]; then
     echo -e "${YELLOW}⚠️  Folder $APP_DIR already exists, skipping scaffold${NC}"
 else
     mkdir -p apps
-    (cd apps && npm create --yes vite@latest "$APP_NAME" -- --template react-ts --no-interactive)
+    echo -e "${BLUE}📦 Running Vite's scaffolder in a temporary Node container...${NC}"
+    # Same Node version as the project image (templates/stacks/node).
+    # --user keeps the files owned by you (matters on Linux); HOME=/tmp
+    # gives npm a writable cache folder for that user.
+    docker run --rm \
+        --user "$(id -u):$(id -g)" \
+        -e HOME=/tmp \
+        -v "$PWD/apps:/apps" \
+        -w /apps \
+        node:24-alpine \
+        npm create --yes vite@latest "$APP_NAME" -- --template react-ts --no-interactive
     echo -e "${GREEN}✅ Scaffolded Vite + React + TypeScript project${NC}"
 fi
 
