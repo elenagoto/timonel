@@ -47,7 +47,7 @@ docker --version
 
 ```bash
 # 1. Clone and install (links the `timonel` command, sets up tab completion)
-git clone https://github.com/elenagoto/dockerator.git timonel
+git clone https://github.com/elenagoto/timonel.git
 bash timonel/install.sh
 
 # 2. In a new terminal window: start the shared services
@@ -500,8 +500,8 @@ MIT - see [LICENSE](LICENSE) file
 
 ## 💬 Support
 
-- 🐛 **Bug reports**: [Open an issue](https://github.com/elenagoto/dockerator/issues)
-- 💡 **Feature requests**: [Open an issue](https://github.com/elenagoto/dockerator/issues)
+- 🐛 **Bug reports**: [Open an issue](https://github.com/elenagoto/timonel/issues)
+- 💡 **Feature requests**: [Open an issue](https://github.com/elenagoto/timonel/issues)
 
 ---
 
