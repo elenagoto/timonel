@@ -58,6 +58,7 @@ The shell opens in `/app`, the project root:
 | Command | What it does |
 | --- | --- |
 | `php artisan <command>` | Artisan: `migrate`, `make:model`, `tinker`… |
+| `php artisan test` | Run the tests. They use SQLite in memory (Laravel's `phpunit.xml`), so your MySQL data is never touched |
 | `composer install` | Install PHP dependencies |
 | `npm run dev` | Start Vite's dev server, with hot reload at `localhost:5173` |
 | `npm run build` | Build the assets for production |

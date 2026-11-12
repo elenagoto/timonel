@@ -111,6 +111,7 @@ echo "Available commands:"
 case "$FRAMEWORK" in
     laravel)
         echo "  php artisan <command>  - Artisan (migrate, make:model, tinker...)"
+        echo "  php artisan test       - Run the tests (SQLite in memory, not the project's MySQL)"
         echo "  composer install       - Install PHP dependencies"
         echo "  npm install            - Install front-end dependencies"
         echo "  npm run dev            - Start Vite dev server (with HMR)"
