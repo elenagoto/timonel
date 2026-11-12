@@ -1,0 +1,80 @@
+# Documentation website, built from docs/ with Zensical (the successor of
+# Material for MkDocs, by the same team) and published to GitHub Pages by
+# .github/workflows/docs.yml. Zensical reads this mkdocs.yml format as is;
+# Material for MkDocs can still build it too (until its end of life, May 2027).
+# Preview locally (only Docker needed), then open http://localhost:8000/timonel/
+#   docker run --rm -it -p 8000:8000 -v "$PWD":/docs zensical/zensical
+
+site_name: Timonel
+site_description: Run many local projects side by side in Docker (Next.js, Vite, Parcel, WordPress, Laravel).
+site_url: https://elenagoto.github.io/timonel/
+repo_url: https://github.com/elenagoto/timonel
+repo_name: elenagoto/timonel
+edit_uri: edit/main/docs/
+copyright: MIT License · Formerly known as Dockerator
+
+# docs/README.md is the home page (GitHub also shows it when you open docs/)
+docs_dir: docs
+
+nav:
+  - Home: README.md
+  - Getting started: getting-started.md
+  - Guides:
+      - Creating projects: creating-projects.md
+      - Bringing in existing projects: existing-projects.md
+      - Dev mode: dev-mode.md
+      - Databases and mail: databases-and-mail.md
+  - Reference:
+      - Commands: commands.md
+      - Troubleshooting: troubleshooting.md
+  - Contributors:
+      - How it works: how-it-works.md
+
+theme:
+  name: material
+  icon:
+    logo: material/compass-outline
+    repo: fontawesome/brands/github
+  palette:
+    # Follow the system setting, with a toggle
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+
+markdown_extensions:
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+
+# Report broken links and anchors (an error with `mkdocs build --strict`)
+validation:
+  nav:
+    omitted_files: warn
+    not_found: warn
+  links:
+    not_found: warn
+    anchors: warn
