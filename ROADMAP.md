@@ -145,7 +145,7 @@ timonel history [--errors]                # command log (phase 4)
 - [x] **Fresh start** (done 2026-11-12, before the rename, as you chose):
   - Backups in `~/dockerator-backup-2026-11-12/`: `apps.tar.gz` (all 11 projects incl. their `.git`, without `node_modules`/`.next`/`.parcel-cache`, plus the old `docker-compose.yml`; verified file for file) and `mysql-databases.sql` (`portfolio`, `test_wp`; verified by restoring into a throwaway MySQL: 27 tables, 610 rows, all counts identical)
   - Deleted: the 11 `apps/` folders, images `dockerator-next-routing-exercises` + `dockerator-rust-removal`, volume `dockerator_mysql_data`; `docker-compose.yml` reset from the template. No containers or network existed. `devner_*` volumes left alone.
-  - [ ] You: remove the old `/etc/hosts` block (`sudo sed -i '' '/# Dockerator managed hosts/,/# End Dockerator managed hosts/d' /etc/hosts`)
+  - [x] You: remove the old `/etc/hosts` block (done) (`sudo sed -i '' '/# Dockerator managed hosts/,/# End Dockerator managed hosts/d' /etc/hosts`)
   - [x] Old install leftovers (`/usr/local/bin/dockerator`, `~/.dockerator-path`, `~/.zsh/completion/_dockerator`): removed by the new `install.sh` when Timonel is installed (only links pointing into a Dockerator/Timonel checkout; tested that an unrelated `dockerator` link survives) — done 2026-11-12: all three gone after the install
 - [x] Rename the local folder and the GitHub repo (you), then update the clone URL in the README — done 2026-11-12: `gh repo rename timonel` (old web URLs, deep links and git URLs verified to redirect; 301), local `origin` set to `git@github.com:elenagoto/timonel.git`, README clone and issue links switched
   - [x] **Local folder** (done 2026-11-12: now `~/projects/timonel`; the Claude Code session storage folder was renamed too, so the conversation could be resumed) (you, outside Claude Code and VS Code, since both run inside it): close them, `mv ~/projects/dockerator ~/projects/timonel`, then `bash ~/projects/timonel/install.sh`, open a new terminal, and reopen VS Code / Claude Code in `~/projects/timonel`. Nothing else depends on the folder name (Compose project name is pinned to `timonel`; `apps/` is empty).
@@ -171,7 +171,7 @@ timonel history [--errors]                # command log (phase 4)
   - [x] Phase 1: Stacks section; Vite and Parcel usage; features list includes Vite/Parcel *(audit)*; no longer points to a missing `example` environment block *(audit)*
   - [x] Phase 2: `new` vs `add` (Usage overview table), single `dev`, Laravel usage and dev mode, database info for PHP projects, `remove` behaviour, common mistake "`new` on a downloaded project"
 - [x] Add an MIT `LICENSE` file (Copyright 2025-2026 Laura Gomez); README badge now links to it, plus a platform badge (macOS | Linux)
-- [ ] Update CLAUDE.md after each phase (done through phase 3: "formerly Dockerator", redesign status)
+- [x] Update CLAUDE.md after each phase (done through phase 4; now a standing rule in CLAUDE.md's Documentation section)
 
 ## Docs refactor (2026-11-12)
 
