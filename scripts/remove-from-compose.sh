@@ -5,6 +5,9 @@
 
 set -e
 
+source scripts/lib/project.sh
+source scripts/lib/compose.sh
+
 APP_NAME=$1
 COMPOSE_FILE="docker-compose.yml"
 
@@ -13,11 +16,10 @@ if [ -z "$APP_NAME" ]; then
     exit 1
 fi
 
-# Sanitize name
-SAFE_NAME=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+SAFE_NAME=$(to_safe_name "$APP_NAME")
 
-# Check if service exists
-if ! grep -q "^  $SAFE_NAME:" "$COMPOSE_FILE"; then
+# Check if the project service exists (never a core service, network or volume key)
+if ! project_service_exists "$SAFE_NAME" "$COMPOSE_FILE"; then
     echo "⚠️  Service '$SAFE_NAME' not found in docker-compose.yml"
     exit 0
 fi

@@ -6,7 +6,10 @@
 set -e
 
 PROJECT_NAME=$1
-SAFE_URL=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+source scripts/lib/project.sh
+source scripts/lib/compose.sh
+
+SAFE_URL=$(to_safe_name "$PROJECT_NAME")
 
 # Colors
 GREEN='\033[0;32m'
@@ -20,7 +23,7 @@ if [ -z "$PROJECT_NAME" ]; then
 fi
 
 # Check if project exists in docker-compose.yml
-if ! grep -q "^  $SAFE_URL:" docker-compose.yml; then
+if ! project_service_exists "$SAFE_URL"; then
     echo -e "${RED}❌ Error: Project '$PROJECT_NAME' not found${NC}"
     exit 1
 fi

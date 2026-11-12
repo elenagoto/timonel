@@ -230,7 +230,7 @@ dockerator start <name>    # Start project
 dockerator stop <name>     # Stop project
 dockerator restart <name>  # Restart with a full dependency reinstall (node_modules included)
 dockerator logs <name>     # View logs
-dockerator remove <name>   # Remove project completely
+dockerator remove <name>   # Remove project completely (container, its volumes and image, folder; asks before deleting its database)
 dockerator hosts           # Sync /etc/hosts
 ```
 
@@ -264,6 +264,7 @@ dockerator/
 │   ├── add-project.sh              # `add` command: dockerize an existing project in apps/
 │   ├── add-to-compose.sh           # Add any project (Next.js, Vite, Parcel, WordPress) to compose
 │   ├── create-db.sh                # Create a MySQL database + user (starts MySQL if needed)
+│   ├── drop-db.sh                  # Delete a project's database + user (used by remove)
 │   ├── dev-mode-node.sh            # Dev mode for Next.js/Vite/Parcel (called by dev-project.sh)
 │   ├── dev-mode-php.sh             # Dev mode for WordPress/Laravel (called by dev-project.sh)
 │   ├── dev-project.sh              # `dev` command: picks the right dev mode for the project

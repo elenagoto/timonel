@@ -117,10 +117,10 @@ timonel history [--errors]                # command log (phase 4)
 - [x] `dev <name>`: one command (`dev-project.sh` → `dev-mode-node.sh` / `dev-mode-php.sh`); the php stack publishes 5173 during the session; tailored hints per framework
 - [x] Remove `dev-wp`, `dev-front`, `dev-nextjs`, `dev-vite` (dispatcher, completions, `list` footer, docs)
 - [x] Shared framework detection (`detect_framework`, `project_framework` in `frameworks.sh`): label first, else files; Laravel/WordPress checked before `package.json`. Used by `dev` and `list`; `add` will reuse it
-- [ ] Flags are validated: an unknown or misplaced flag is an error, not silently ignored *(audit: `--with-db` was ignored for non-Next types)*. Done for `new` (phase 1) and `add`; still to do for the other commands.
-- [ ] Replace the remaining `grep "^  name:"` checks with `project_service_exists` in start/stop/restart/remove as they're rewritten (from phase 1; dev mode done)
-- [ ] `remove` cleanup *(audit)*: delete anonymous volumes (`rm -v`) and the built image; **ask** whether to delete the project's database and user (default: keep); run `hosts` instead of telling you to edit `/etc/hosts` with nano
-- [ ] Verify `down` and `logs` (no name) include project containers, which sit in the `projects` profile. Add `--profile projects` if not.
+- [x] Flags are validated: an unknown or misplaced flag is an error, not silently ignored *(audit: `--with-db` was ignored for non-Next types)*. `new` and `add` check `--with-db`; every other command rejects extra arguments.
+- [x] Replace the remaining `grep "^  name:"` checks with `project_service_exists` (start, stop, restart, remove, remove-from-compose). None left.
+- [x] `remove` cleanup *(audit)*: asks first, then deletes the container with its anonymous volumes (`rm -fsv`) and the built image; **asks** whether to delete the project's database and user (`drop-db.sh`, default: keep); points to `dockerator hosts` instead of `/etc/hosts` with nano
+- [x] Verify `down` and `logs` include project containers (`projects` profile). Docs say plain `down` skips profiled services, but Compose 5.7 includes them; `--profile projects` added to both so every version behaves the same. `logs <name>` also accepts the folder form (`my_app`).
 - [ ] **Laravel**:
   - [ ] `new laravel <name>`: `composer create-project laravel/laravel` in a temporary container
   - [ ] `--kit react|vue|livewire`: create from Laravel's starter kit instead (check which version `laravel new` installs: the kits' tagged releases date from Feb 2025)

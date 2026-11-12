@@ -104,6 +104,19 @@ if [ -n "$NAME_ARG" ]; then
     fi
 fi
 
+# Reject unexpected extra arguments instead of silently ignoring them
+# (`new` and `add` check their own optional --with-db flag)
+case $COMMAND in
+    remove|open|start|stop|restart|dev|logs) MAX_ARGS=2 ;;
+    up|down|list|hosts|help)                 MAX_ARGS=1 ;;
+    *)                                       MAX_ARGS="" ;;
+esac
+if [ -n "$MAX_ARGS" ] && [ $# -gt "$MAX_ARGS" ]; then
+    echo -e "${RED}❌ Unexpected argument(s) for '$COMMAND': ${*:$((MAX_ARGS + 1))}${NC}"
+    show_menu
+    exit 1
+fi
+
 case $COMMAND in
     new)
         if [ $# -lt 3 ]; then
@@ -240,13 +253,17 @@ case $COMMAND in
         docker-compose up -d
         ;;
     down)
-        docker-compose down
+        # --profile projects: also stop project containers. Recent Compose
+        # versions do this anyway; older ones skip services in a profile.
+        docker-compose --profile projects down
         ;;
     logs)
+        # --profile projects: include project containers in the combined
+        # logs on every Compose version (see `down`)
         if [ -n "$2" ]; then
-            docker-compose logs -f "$2"
+            docker-compose --profile projects logs -f "$(to_safe_name "$2")"
         else
-            docker-compose logs -f
+            docker-compose --profile projects logs -f
         fi
         ;;
     help)

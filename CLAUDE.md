@@ -23,7 +23,7 @@ dockerator list                     # scripts/list-projects.sh
 dockerator logs [name]              # docker-compose logs -f
 dockerator hosts                    # syncs *.localhost entries into /etc/hosts (needs sudo)
 dockerator open <name>              # opens apps/<name> in VS Code
-dockerator remove <name>            # stops container, removes from compose, deletes apps/<name>
+dockerator remove <name>            # asks (and whether to drop its DB, default keep), then removes container + anon volumes + image, compose block, apps/<name>
 ```
 
 Manually testing a change to a `scripts/*.sh` file means running the corresponding `dockerator <command>` against a scratch project in `apps/`.
