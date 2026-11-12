@@ -29,6 +29,19 @@ list_project_services() {
     ' "$file"
 }
 
+# Print the folders in apps/ that aren't registered in docker-compose.yml
+# yet (candidates for `add`), one per line.
+# Needs scripts/lib/project.sh sourced as well (to_safe_name).
+list_unregistered_apps() {
+    local dir name
+    for dir in apps/*/; do
+        [ -d "$dir" ] || continue
+        name=$(basename "$dir")
+        is_valid_project_name "$name" || continue
+        project_service_exists "$(to_safe_name "$name")" || echo "$name"
+    done
+}
+
 # True if <service> is a project service in docker-compose.yml
 project_service_exists() {
     list_project_services "${2:-docker-compose.yml}" | grep -qx -- "$1"

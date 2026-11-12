@@ -117,7 +117,7 @@ This creates the `my_app` database and user in the shared MySQL service (startin
 
 Without the flag, the project starts with no database connection — useful for pure frontend practice. `--with-db` works the same way for `vite` and `parcel` projects.
 
-> **Using an existing/downloaded project instead of scaffolding a new one?** See [Bringing In Existing Projects](#-bringing-in-existing-projects) below — the TypeScript default does **not** get forced onto projects that already have their own `src/app` (e.g. course exercises).
+> **Using an existing/downloaded project instead of scaffolding a new one?** Use `dockerator add` — see [Bringing In Existing Projects](#-bringing-in-existing-projects) below. It never forces TypeScript (or anything else) onto the project.
 
 #### WordPress Project
 
@@ -156,13 +156,21 @@ A small **JavaScript** React starter built with Parcel: `public/index.html`, `sr
 
 ### 📥 Bringing In Existing Projects
 
-If you download a project (e.g. a course repo) into `apps/<name>` and then run `dockerator new nextjs <name>` to wire up Docker, Dockerator only fills in what's **missing** — it never overwrites or restructures files that already exist:
+Downloaded a project (e.g. a course repo or a client site)? Put it in `apps/<name>` and run:
 
-- Already has `package.json`? Left untouched, as-is (whatever dependencies/JS-or-TS setup it already has).
-- Already has `src/app`? The entire scaffolding step (including the default `tsconfig.json`) is skipped — the project stays exactly as downloaded, TypeScript or not.
-- Missing `Dockerfile` / `.dockerignore`? Those get added, since Docker plumbing is Dockerator's actual job.
+```bash
+dockerator add my-course-app            # Node projects: add --with-db for a database
+dockerator start my-course-app
+# Visit: http://my-course-app.localhost
+```
 
-In short: **the TypeScript default only applies to brand-new projects scaffolded from scratch.** A downloaded plain-JS course project run through `dockerator new nextjs` stays plain JS — nothing forces a conversion.
+`add` detects the framework (Next.js, Vite, Parcel, WordPress, Laravel) and **asks you to confirm it**: press Enter to accept, or pick another from the list. Then it only adds what's **missing** for Docker, and never overwrites or restructures the project's own files:
+
+- `Dockerfile`, `.dockerignore` (and a `Caddyfile` for WordPress) are added only if they don't exist.
+- Your `package.json`, TypeScript-or-not setup, and source files stay exactly as downloaded.
+- WordPress: a database is created; if `wp-config.php` doesn't point at the shared MySQL server, `add` tells you which settings to use (it doesn't edit the file).
+
+`dockerator add` is also safe on a project that's already set up: it skips the question and fills in anything missing (for example a database). `dockerator new` is only for **fresh** projects: if `apps/<name>` already exists, it stops and points you to `add`.
 
 ---
 
@@ -253,6 +261,7 @@ dockerator/
 │   │   ├── compose.sh              # Read/edit docker-compose.yml (insert, list projects, labels)
 │   │   ├── frameworks.sh           # Per-framework settings: stack, port, volumes, dev flags, web root
 │   │   └── project.sh              # Shared helpers: name validation, folder lookup
+│   ├── add-project.sh              # `add` command: dockerize an existing project in apps/
 │   ├── add-to-compose.sh           # Add any project (Next.js, Vite, Parcel, WordPress) to compose
 │   ├── create-db.sh                # Create a MySQL database + user (starts MySQL if needed)
 │   ├── dev-mode-node.sh            # Dev mode for Next.js/Vite/Parcel (called by dev-project.sh)
@@ -334,11 +343,11 @@ docker-compose ps
 dockerator logs mysql
 ```
 
-If the database itself is missing, for example because the site was created while MySQL was stopped with an older Dockerator version, re-run the create command. It's safe on an existing project and only creates what's missing:
+If the database itself is missing, for example because the site was created while MySQL was stopped with an older Dockerator version, run `add` on the project. It's safe on a project that's already set up and only creates what's missing:
 
 ```bash
-dockerator new wp my-site                # WordPress
-dockerator new nextjs my-app --with-db   # Next.js with DB
+dockerator add my-site                # WordPress
+dockerator add my-app --with-db       # Node project with a database
 ```
 
 ### Port 5173 Already in Use (WordPress dev mode)
@@ -359,7 +368,7 @@ If a Next.js project was created **before** the `--with-db` flag existed, it won
 Two possible reasons, both expected:
 
 1. **Created before TypeScript became the default** — same situation as the DB flag above. Recreate it, or manually add `tsconfig.json` + convert files yourself.
-2. **Scaffolded from an existing/downloaded project** (e.g. a course repo) that already had its own `src/app` — Dockerator intentionally does not force TypeScript onto projects it didn't create from scratch. See [Bringing In Existing Projects](#-bringing-in-existing-projects).
+2. **Brought in with `dockerator add`** (e.g. a course repo) — Dockerator intentionally does not force TypeScript onto projects it didn't create from scratch. See [Bringing In Existing Projects](#-bringing-in-existing-projects).
 
 ### Permission Denied Removing Files
 

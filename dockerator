@@ -21,8 +21,9 @@ SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 # Change to that directory so all paths work
 cd "$SCRIPT_DIR"
 
-# Project-name helpers (validation, reserved names)
+# Project-name helpers (validation, reserved names) and compose lookups
 source scripts/lib/project.sh
+source scripts/lib/compose.sh
 
 # DEBUG - temporary
 # echo "DEBUG: Script dir: $SCRIPT_DIR"
@@ -57,6 +58,7 @@ show_menu() {
     echo "  up                 - Start all containers"
     echo "  down               - Stop all containers"
     echo "  new <type> <name>  - Create new project (nextjs, vite, parcel, wp)"
+    echo "  add <name>         - Dockerize an existing project in apps/<name>"
     echo "  open <name>        - Open a project in VS Code"
     echo "  remove <name>      - Remove a project"
     echo "  start <name>       - Start a specific project"
@@ -85,7 +87,7 @@ COMMAND=$1
 # (rm -rf apps/<name>), sed replacements or SQL
 case $COMMAND in
     new) NAME_ARG=${3-} ;;
-    remove|open|start|stop|restart|logs|dev) NAME_ARG=${2-} ;;
+    add|remove|open|start|stop|restart|logs|dev) NAME_ARG=${2-} ;;
     *) NAME_ARG="" ;;
 esac
 
@@ -95,8 +97,8 @@ if [ -n "$NAME_ARG" ]; then
         echo "   Use only letters, digits, '-' and '_', starting with a letter or digit."
         exit 1
     fi
-    # Creating or removing a core service name would clobber shared services
-    if { [ "$COMMAND" = "new" ] || [ "$COMMAND" = "remove" ]; } && is_reserved_project_name "$NAME_ARG"; then
+    # Creating, adding or removing a core service name would clobber shared services
+    if { [ "$COMMAND" = "new" ] || [ "$COMMAND" = "add" ] || [ "$COMMAND" = "remove" ]; } && is_reserved_project_name "$NAME_ARG"; then
         echo -e "${RED}❌ '$NAME_ARG' is reserved by Dockerator (${DOCKERATOR_RESERVED_NAMES// /, })${NC}"
         exit 1
     fi
@@ -118,6 +120,18 @@ case $COMMAND in
         if [ $# -gt 4 ] || { [ -n "$WITH_DB" ] && [ "$WITH_DB" != "--with-db" ]; }; then
             echo -e "${RED}Unknown option: ${*:4}${NC}"
             echo "  Usage: dockerator new <type> <name> [--with-db]"
+            exit 1
+        fi
+
+        # `new` only creates fresh projects; existing ones go through `add`
+        if [ -d "apps/$PROJECT_NAME" ]; then
+            echo -e "${RED}❌ apps/$PROJECT_NAME already exists${NC}"
+            echo "   To dockerize an existing project, use: dockerator add $PROJECT_NAME"
+            exit 1
+        fi
+        if project_service_exists "$(to_safe_name "$PROJECT_NAME")"; then
+            echo -e "${RED}❌ A project called '$(to_safe_name "$PROJECT_NAME")' is already in docker-compose.yml${NC}"
+            echo "   Pick another name, or remove it first: dockerator remove $(to_safe_name "$PROJECT_NAME")"
             exit 1
         fi
 
@@ -143,6 +157,20 @@ case $COMMAND in
                 exit 1
                 ;;
         esac
+        ;;
+    add)
+        if [ -z "$2" ]; then
+            echo -e "${RED}Usage: dockerator add <name> [--with-db]${NC}"
+            echo "  Dockerizes an existing project in apps/<name>"
+            exit 1
+        fi
+        if [ $# -gt 3 ] || { [ -n "${3-}" ] && [ "$3" != "--with-db" ]; }; then
+            echo -e "${RED}Unknown option: ${*:3}${NC}"
+            echo "  Usage: dockerator add <name> [--with-db]"
+            exit 1
+        fi
+
+        ./scripts/add-project.sh "$2" "${3-}"
         ;;
     remove)
         if [ -z "$2" ]; then

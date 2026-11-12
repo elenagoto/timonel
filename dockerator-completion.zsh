@@ -23,6 +23,7 @@ _dockerator() {
     local -a commands
     commands=(
         'new:Create new project'
+        'add:Dockerize an existing project in apps/'
         'open:Open project in VS Code'
         'list:List all projects'
         'up:Start all containers'
@@ -61,6 +62,13 @@ _dockerator() {
                     ;;
                 open|logs|remove|start|stop|restart|dev)
                     _describe 'project' projects && ret=0
+                    ;;
+                add)
+                    # Folders in apps/ that aren't registered yet
+                    local -a unregistered
+                    unregistered=(${(f)"$(cd "$DOCKERATOR_DIR" 2>/dev/null && \
+                        bash -c 'source scripts/lib/project.sh && source scripts/lib/compose.sh && list_unregistered_apps' 2>/dev/null)"})
+                    _describe 'folder' unregistered && ret=0
                     ;;
             esac
             ;;

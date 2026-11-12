@@ -111,12 +111,13 @@ timonel history [--errors]                # command log (phase 4)
 
 ## Phase 2: `add` and unified `dev`
 
-- [ ] `add <name>`: detect the framework, **ask to confirm or pick another**, copy the stack's Docker files only if missing, never touch app files
-- [ ] Move the "existing Next.js project" behaviour from `new nextjs` into `add`; `new` stops with "use `add`" if `apps/<name>` exists
+- [x] `add <name> [--with-db]` (`add-project.sh`): detect the framework, **ask to confirm or pick another**, copy the stack's Docker files only if missing, never touch app files (WordPress: adds the Mailpit mu-plugin if missing, *prints* DB settings if `wp-config.php` doesn't use `mysql`); safe to re-run on a registered project; `add <Tab>` suggests unregistered folders
+- [x] Move the "existing Next.js project" behaviour from `new nextjs` into `add`; `new` stops with "use `add`" if `apps/<name>` exists (or the service name is taken)
+- [ ] Laravel part of `add` (fill a missing `.env`): in the Laravel group below
 - [x] `dev <name>`: one command (`dev-project.sh` → `dev-mode-node.sh` / `dev-mode-php.sh`); the php stack publishes 5173 during the session; tailored hints per framework
 - [x] Remove `dev-wp`, `dev-front`, `dev-nextjs`, `dev-vite` (dispatcher, completions, `list` footer, docs)
 - [x] Shared framework detection (`detect_framework`, `project_framework` in `frameworks.sh`): label first, else files; Laravel/WordPress checked before `package.json`. Used by `dev` and `list`; `add` will reuse it
-- [ ] Flags are validated: an unknown or misplaced flag is an error, not silently ignored *(audit: `--with-db` was ignored for non-Next types)*. Already done for `new` (phase 1); do the same for `add` and the other commands.
+- [ ] Flags are validated: an unknown or misplaced flag is an error, not silently ignored *(audit: `--with-db` was ignored for non-Next types)*. Done for `new` (phase 1) and `add`; still to do for the other commands.
 - [ ] Replace the remaining `grep "^  name:"` checks with `project_service_exists` in start/stop/restart/remove as they're rewritten (from phase 1; dev mode done)
 - [ ] `remove` cleanup *(audit)*: delete anonymous volumes (`rm -v`) and the built image; **ask** whether to delete the project's database and user (default: keep); run `hosts` instead of telling you to edit `/etc/hosts` with nano
 - [ ] Verify `down` and `logs` (no name) include project containers, which sit in the `projects` profile. Add `--profile projects` if not.

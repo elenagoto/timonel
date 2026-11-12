@@ -15,7 +15,8 @@ There is no build/lint/test suite — this is a shell script toolkit. To work on
 ```bash
 ./install.sh                       # symlinks `dockerator` to /usr/local/bin, sets up shell completion, copies docker-compose.yml.example -> docker-compose.yml
 dockerator up / down                # start/stop shared services (Traefik, MySQL, Adminer, Mailpit)
-dockerator new nextjs|wp|vite|parcel <name> [--with-db]   # scaffold a project
+dockerator new nextjs|wp|vite|parcel <name> [--with-db]   # scaffold a fresh project (refuses an existing apps/<name>)
+dockerator add <name> [--with-db]   # dockerize an existing apps/<name> (scripts/add-project.sh)
 dockerator start|stop|restart <name>
 dockerator dev <name>               # dev shell in the project (scripts/dev-project.sh picks node or php dev mode)
 dockerator list                     # scripts/list-projects.sh
@@ -39,7 +40,7 @@ Manually testing a change to a `scripts/*.sh` file means running the correspondi
 
 **Name sanitization convention**, repeated across scripts: `SAFE_NAME`/`SAFE_URL` = lowercase, `_`→`-` (used for hostnames, container names, compose service keys); `SAFE_DB` = lowercase, `-`→`_` (used for MySQL db/user names). Both directions of translation appear depending on the script — check which one a given script uses before assuming. The `apps/` folder keeps the name *as typed* (e.g. `my_app`), so it can differ from the service key (`my-app`): never build `apps/$SAFE_NAME` — use `resolve_app_dir_name` from `scripts/lib/project.sh` (sourced, not executed), which reads the folder from the service's `build.context`. The dispatcher validates every project-name argument (`is_valid_project_name`: `[A-Za-z0-9][A-Za-z0-9_-]*`) and rejects core-service names for `new`/`remove`.
 
-**Existing-project detection (Next.js only).** `new-nextjs.sh` skips scaffolding entirely if `apps/<name>/src/app` already exists, so downloading a course repo into `apps/` and then running `dockerator new nextjs <name>` only adds Docker plumbing (Dockerfile, `.dockerignore`) without touching the app's own files or forcing TypeScript. New Next.js apps scaffolded from scratch always get TypeScript (`tsconfig.json`, `.tsx` files) and ESLint (`eslint.config.mjs`, same setup as `create-next-app`) from `scripts/templates/nextjs/`.
+**`new` vs `add`.** `new` only creates fresh projects: the dispatcher refuses it when `apps/<name>` exists or the service name is taken, and points to `add`. `add` (`scripts/add-project.sh`) dockerizes an existing folder: `detect_framework` guesses, then it **always asks** the user to confirm (numbered list, Enter = detected; a number or framework name is accepted; no tty + detection = detected), copies the stack's Docker files only if missing, creates the DB (php always, node with `--with-db`) and calls `add-to-compose.sh`. It never edits app files (for WordPress it only adds the Mailpit mu-plugin if missing and *prints* the DB settings when `wp-config.php` doesn't use `mysql`). On an already-registered project it skips the question and only fills in what's missing. New Next.js apps scaffolded from scratch always get TypeScript (`tsconfig.json`, `.tsx` files) and ESLint (`eslint.config.mjs`, same setup as `create-next-app`) from `scripts/templates/nextjs/`.
 
 **Scaffolding runs in containers, never on the host.** `new-vite-react.sh` runs `npm create vite` in a throwaway `node:24-alpine` container with `--user "$(id -u):$(id -g)" -e HOME=/tmp`, so files stay owned by the user and no host Node/npm is needed. Caveat for future scaffolders: some (e.g. `create-next-app`) call `os.userInfo()` and crash under a uid with no account in the container — run those as root and `chown` afterwards instead.
 
