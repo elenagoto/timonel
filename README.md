@@ -1,6 +1,6 @@
 # Dockerator 🐳
 
-> A Docker orchestration CLI tool for managing multiple Next.js and WordPress projects with automatic routing and zero configuration.
+> A Docker orchestration CLI tool for managing multiple Next.js, Vite, Parcel and WordPress projects with automatic routing and zero configuration.
 
 Inspired by [devner](https://github.com/MarJC5/devner).
 
@@ -10,11 +10,13 @@ Inspired by [devner](https://github.com/MarJC5/devner).
 
 ## ✨ Features
 
-- 🚀 **One-command project creation** - `dockerator new nextjs|wp|vite <name>`
-- 📘 **TypeScript by default** - New Next.js projects scaffold as TypeScript (strict mode), not JavaScript
+- 🚀 **One-command project creation** - `dockerator new nextjs|vite|parcel|wp <name>`
+- 📘 **TypeScript by default** - New Next.js projects scaffold as TypeScript (strict mode) with ESLint, not JavaScript
+- 🧱 **Two shared images** - one Node 24 image for every JavaScript project, one PHP 8.4 (FrankenPHP) image for WordPress
+- 🐳 **Only Docker needed** - no Node.js, npm or PHP on your machine; even Vite's scaffolder runs in a container
 - 🗄️ **Shared services** - MySQL, Adminer, Mailpit across all projects
 - 🔌 **Opt-in DB wiring** - `--with-db` flag connects Next.js, Vite and Parcel projects to MySQL on demand
-- 🔄 **Hot reload** - Changes reflect immediately (Vite + Next.js)
+- 🔄 **Hot reload** - Changes reflect immediately (Next.js, Vite, Parcel, and Vite in WordPress themes)
 - 🌐 **Clean URLs** - `project-name.localhost` for each project
 - 🔐 **Auto /etc/hosts sync** - No manual editing
 - 📋 **Project management** - List, open, and manage all projects
@@ -64,6 +66,19 @@ dockerator hosts
 
 ---
 
+## 🧱 Stacks
+
+Every project runs on one of two shared setups. The framework only decides a few settings (port, web root, cache folders), all kept in `scripts/lib/frameworks.sh`.
+
+| Stack | Frameworks | Image | Dev server port |
+| --- | --- | --- | --- |
+| **node** | Next.js, Vite, Parcel | `node:24-alpine` (`scripts/templates/stacks/node/`) | Next.js 3000, Vite 5173, Parcel 1234 |
+| **php** | WordPress (Laravel coming) | FrankenPHP 1.x, PHP 8.4, Composer, Node 24 (`scripts/templates/stacks/php/`) | 80 (+ 5173 for Vite while `dev-wp` is open) |
+
+Each project's block in `docker-compose.yml` is labelled with its stack and framework (`dockerator.stack`, `dockerator.framework`), which `list` and dev mode read.
+
+---
+
 ## 📖 Usage
 
 ### Creating Projects
@@ -81,7 +96,7 @@ dockerator start my-app
 # Visit: http://my-app.localhost
 ```
 
-Scaffolds a **TypeScript** Next.js app (strict mode) — `src/app/page.tsx`, `src/app/layout.tsx`, and a `tsconfig.json` at the project root. Run `npm run type-check` inside dev mode any time to check types without a full build.
+Scaffolds a **TypeScript** Next.js app (strict mode) — `src/app/page.tsx`, `src/app/layout.tsx`, a `tsconfig.json` and an `eslint.config.mjs` (Next's recommended rules, as `create-next-app` sets up) at the project root. Inside dev mode, `npm run lint` lints the code and `npm run type-check` checks types without a full build.
 
 **With MySQL connected:**
 
@@ -100,7 +115,7 @@ This creates the `my_app` database and user in the shared MySQL service (startin
 - `DB_PASSWORD=my_app`
 - Waits for MySQL to be healthy before starting (`depends_on`)
 
-Without the flag, the project starts with no database connection — useful for pure frontend practice.
+Without the flag, the project starts with no database connection — useful for pure frontend practice. `--with-db` works the same way for `vite` and `parcel` projects.
 
 > **Using an existing/downloaded project instead of scaffolding a new one?** See [Bringing In Existing Projects](#-bringing-in-existing-projects) below — the TypeScript default does **not** get forced onto projects that already have their own `src/app` (e.g. course exercises).
 
@@ -115,7 +130,7 @@ dockerator start my-site
 
 Downloads WordPress, creates the `my_site` database and user (starting MySQL first if needed), generates `wp-config.php`, and sets up an empty theme folder at `wp-content/themes/my-site/`. Re-running `dockerator new wp my-site` on an existing site is safe: it only adds what's missing and never touches your theme.
 
-### Vite/React Project
+#### Vite + React Project
 
 ```bash
 dockerator new vite my-vite
@@ -123,6 +138,19 @@ dockerator hosts
 dockerator start my-vite
 # Visit: http://my-vite.localhost
 ```
+
+Creates a **TypeScript** React app with Vite's official scaffolder (`react-ts` template), run inside a temporary Node container, so you don't need Node.js or npm installed. `vite.config.ts` is adjusted so the dev server works inside Docker.
+
+#### Parcel + React Project
+
+```bash
+dockerator new parcel my-parcel
+dockerator hosts
+dockerator start my-parcel
+# Visit: http://my-parcel.localhost
+```
+
+A small **JavaScript** React starter built with Parcel: `public/index.html`, `src/`, `components/App/`, an `assets/` folder for static files, and Prettier (`npm run format`).
 
 ---
 
@@ -158,7 +186,7 @@ Port 5173 is only published while dev mode is open, so several WordPress project
 
 ---
 
-### 💻 Next.js/Vite Development
+### 💻 Next.js / Vite / Parcel Development
 
 ```bash
 # Enter dev mode
@@ -178,8 +206,8 @@ dockerator dev-front my-app
 
 🔧 Other commands:
   npm run build       - Build for production
-  npm run lint         - Lint code
-  npm run type-check   - Check TypeScript types without building (TS projects only)
+  npm run lint         - Lint code (Next.js projects)
+  npm run type-check   - Check TypeScript types without building (Next.js projects)
 
 # When done: exit
 ```
@@ -258,7 +286,7 @@ Each WordPress site automatically gets the following when it's created (`dockera
 - **Password**: `project_name`
 - **Host**: `mysql`
 
-### Next.js Projects
+### Next.js, Vite and Parcel Projects
 
 Database wiring is **opt-in** via the `--with-db` flag (see [Usage](#-usage) above) — not automatic like WordPress. Same naming convention applies:
 
@@ -324,7 +352,7 @@ WordPress projects created with older Dockerator versions publish 5173 **permane
 If a Next.js project was created **before** the `--with-db` flag existed, it won't have `DB_*` environment variables or a MySQL dependency — that's expected, not a bug. Two options:
 
 1. Remove the project and recreate it with `dockerator new nextjs <name> --with-db`
-2. Manually add the `environment` and `depends_on` blocks to that project's service entry in `docker-compose.yml` (see the Next.js block in `docker-compose.yml.example` as a reference for the shape)
+2. Manually add the `environment` and `depends_on` blocks to that project's service entry in `docker-compose.yml`. For the exact shape, look at the block `scripts/add-to-compose.sh` writes with `--with-db` (the `DB_*` variables and `depends_on: mysql: condition: service_healthy`).
 
 ### Next.js Project Isn't TypeScript
 
@@ -342,8 +370,8 @@ docker run --rm -v "$(pwd)":/data alpine rm -rf /data/apps/project-name
 
 ### First WordPress Build is Slow
 
-- **First WP project**: ~2-3 minutes (installs PHP extensions + Node.js)
-- **Second WP project**: ~1 minute (uses Docker cache)
+- **First WP project**: ~2-3 minutes (installs PHP extensions, Composer and Node.js)
+- **Second WP project**: much faster, since every PHP project shares the same image layers (Docker cache)
 - **Reopening existing**: Instant! ⚡
 
 ---

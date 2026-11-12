@@ -74,7 +74,7 @@ timonel history [--errors]                # command log (phase 4)
 - [x] README and CLAUDE.md updated
 - [x] Commit these
 
-## Phase 1: Restructure into stacks and templates
+## Phase 1: Restructure into stacks and templates (done: commits 96ed703, 3e322e0, 20a8aaa, 8a580df, 6a62cbd, 870ad08 + docs)
 
 - [x] One Node Dockerfile and one compose generator for the node stack (`templates/stacks/node/`, `add-to-compose.sh`; replaces the 3 near-identical `add-to-compose-*` scripts and Dockerfiles)
 - [x] Per-framework settings table (`scripts/lib/frameworks.sh`: stack, port, cache volumes, dev args, web root, display name)
@@ -90,7 +90,7 @@ timonel history [--errors]                # command log (phase 4)
   - Verified: a scaffolded WordPress reaches its install page against MySQL; a Laravel 13 app created with `composer create-project` inside the image is served from `public/`
 - [x] Scaffolding runs in a temporary container: Vite uses `node:24-alpine` with your user id, so files stay yours; npm is no longer a prerequisite. (Laravel's `composer create-project` follows the same pattern in phase 2.)
 - [x] Shared helper that lists project services from the `services:` section only. Used by `list` and both completions. *(Audit: `grep "^  name:"` also matches the `dockerator:` network key, and filtering on "mysql" hides projects with "mysql" in their name.)*
-- [ ] Use it for the per-script "is this project in the compose file?" checks too (`project_service_exists`). Done in `add-to-compose.sh`, all four `new-*` scripts and `dev-mode-php.sh`; still `grep "^  name:"` in start/stop/restart/dev-front/remove (phase 2 rewrites them).
+- [x] Use it for the per-script "is this project in the compose file?" checks too (`project_service_exists`): done in `add-to-compose.sh`, all four `new-*` scripts and `dev-mode-php.sh`. The rest moved to phase 2.
 - [x] Make the compose insert keep the last line of the file *(found while testing: the `while read` loop drops a final line without a trailing newline, e.g. `driver: bridge`)*
 - [x] **Updates** *(audit)*:
   - [x] Node 20 (end-of-life April 2026) → `node:24-alpine` everywhere (also in the PHP image, replacing `setup_20.x`)
@@ -108,7 +108,8 @@ timonel history [--errors]                # command log (phase 4)
 - [ ] Move the "existing Next.js project" behaviour from `new nextjs` into `add`; `new` always scaffolds
 - [ ] `dev <name>`: one command; the php stack publishes 5173 during the session; tailored hints per framework
 - [ ] Remove `dev-wp`, `dev-front`, `dev-nextjs`, `dev-vite`
-- [ ] Flags are validated: an unknown or misplaced flag is an error, not silently ignored *(audit: `--with-db` was ignored for non-Next types)*
+- [ ] Flags are validated: an unknown or misplaced flag is an error, not silently ignored *(audit: `--with-db` was ignored for non-Next types)*. Already done for `new` (phase 1); do the same for `add` and the other commands.
+- [ ] Replace the remaining `grep "^  name:"` checks with `project_service_exists` in start/stop/restart/dev-front/remove as they're rewritten (from phase 1)
 - [ ] `remove` cleanup *(audit)*: delete anonymous volumes (`rm -v`), the built image, and optionally the project's database and user; run `hosts` instead of telling you to edit `/etc/hosts` with nano
 - [ ] Verify `down` and `logs` (no name) include project containers, which sit in the `projects` profile. Add `--profile projects` if not.
 - [ ] **Laravel**:
@@ -142,7 +143,9 @@ timonel history [--errors]                # command log (phase 4)
 
 ## Docs (alongside each phase)
 
-- [ ] Rewrite README around stacks, `new` vs `add`, and `dev` *(audit: features list misses Vite/Parcel; points to a missing `example` environment block)*
+- [ ] Rewrite README around stacks, `new` vs `add`, and `dev`
+  - [x] Phase 1: Stacks section; Vite and Parcel usage; features list includes Vite/Parcel *(audit)*; no longer points to a missing `example` environment block *(audit)*
+  - [ ] Phase 2: `new` vs `add`, single `dev`, Laravel
 - [ ] Add an MIT `LICENSE` file (the README already links to it)
 - [ ] Update CLAUDE.md after each phase
 
