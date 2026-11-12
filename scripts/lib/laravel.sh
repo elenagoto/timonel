@@ -23,6 +23,9 @@ set_env_value() {
 # wired to Dockerator's shared services:
 #   MySQL instead of Laravel's SQLite default, Mailpit for mail,
 #   APP_URL=http://<name>.localhost
+# and QUEUE_CONNECTION=sync: queued jobs (e.g. queued mail) run right away
+# during the request, because no queue worker runs. With Laravel's default
+# (database) they would wait forever in the jobs table.
 # Prints "created" if it wrote a new .env, nothing otherwise.
 #   Usage: laravel_create_env <app_dir> <safe_name> <safe_db>
 laravel_create_env() {
@@ -41,6 +44,7 @@ laravel_create_env() {
     set_env_value "$dir/.env" MAIL_MAILER  smtp
     set_env_value "$dir/.env" MAIL_HOST    mailpit
     set_env_value "$dir/.env" MAIL_PORT    1025
+    set_env_value "$dir/.env" QUEUE_CONNECTION sync
     echo "created"
 }
 

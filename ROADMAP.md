@@ -131,7 +131,8 @@ timonel history [--errors]                # command log (phase 4)
   - [x] `restart` re-runs `composer install` + `npm install` + build (and no longer rebuilds the PHP image, which holds no project deps)
   - [x] `storage/` writable through the bind mount (checked on macOS). On Linux, files are created as your user (`--user`), so it should hold there too, but it's untested on Linux.
   - Verified end to end (isolated scratch stack): plain project and React kit served (HTTP 200, login page for the kit), migrations in MySQL, files owned by the user; Vite dev server reachable from the Mac with CORS for `*.localhost`; `add` on a downloaded repo (no `.env`/`vendor`/`node_modules`) → served in 17 s; `restart`; re-running `add`
-  - Out of scope for now (README "Ideas for Contributions"): queue worker, scheduler, Octane
+  - [x] `.env` gets `QUEUE_CONNECTION=sync`, so queued jobs (e.g. mail to Mailpit) run without a worker
+  - Out of scope for now (README "Ideas for Contributions"): queue worker and scheduler (likely an optional extra container per project, same image, `queue:work` / `schedule:work`); Octane (production-oriented, least useful locally)
 
 ## Phase 3: Rename to timonel and fresh setup
 

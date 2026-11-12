@@ -174,6 +174,7 @@ dockerator start my-api
 Creates the project with Composer inside a temporary container (no PHP or Composer needed on your machine). With `--kit`, you get one of Laravel's official starter kits (login, registration and a dashboard already built), from their current main branch, as Laravel's own installer does. Then Dockerator:
 
 - writes `.env` for the shared services: **MySQL** (database `my_api`, instead of Laravel's SQLite default), **Mailpit** for mail, and `APP_URL=http://my-api.localhost`
+- sets `QUEUE_CONNECTION=sync`, so queued jobs (like queued emails) run immediately: no queue worker runs locally, and with Laravel's default (`database`) they would wait in the `jobs` table forever. To test real background queues, set it back to `database` and run `php artisan queue:work` inside `dockerator dev`
 - sets up `vite.config` so Vite's dev server works inside Docker (hot reload on `localhost:5173`)
 - creates the database, generates the app key, runs the migrations, and builds the front-end assets
 
